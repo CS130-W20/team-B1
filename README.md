@@ -1,5 +1,5 @@
-Director
-========================
+# Director
+It’s Friday night. The party’s poppin’. Everything looks perfect - except Tom’s appointed himself the DJ. From every last remix of Old Town Road, to a salacious selection of death metal and mumble rap, Tom’s playlist is uniquely… his. Which is fine! But at a party, everyone should have a say in the music. Enter Director: a service to democratize party playlists, getting everyone involved in the musical extravaganza.
 
 Director is a full-stack web app, designed to be the premiere destination for party playlists.
 
@@ -32,23 +32,4 @@ Director is a full-stack web app, designed to be the premiere destination for pa
 
 ## Tech Stack Description
 
-Roshambo is built using Django and React. Django incorporates Django Channels, and the Django Rest Framework. React utilizes React Bootstrap. Refer to `backend/requirements.txt` for specific packages used in the backend, and to `package.json` for specific packages used in the frontend.
-
-##### TA Readme stuff (TODO: merge with above)
-
-# Sample Project Title
-Briefly describe your project here.
-
-## Directory Structure
-Explain how the code is organized
-
-## Installation/Run instructions
-Explain how to run your application
-
-## Relevant Links 
-- Documentation link
-- Working URL (if any)
-- anything else
-
-
-
+Director is built using Django and React. Django incorporates Django Channels, and the Django Rest Framework. React utilizes React Bootstrap. Refer to `backend/requirements.txt` for specific packages used in the backend, and to `package.json` for specific packages used in the frontend.
