@@ -1,0 +1,51 @@
+{
+  "name": "roshambo",
+  "version": "1.0.0",
+  "description": "High stakes rock-paper-scissors.",
+  "contributors": [
+    "Benji Brandt <benjibrandt@ucla.edu>",
+    "David Macaraeg <dmacaraeg@ucla.edu>",
+    "Akram Sabbah",
+    "Johnson Chou",
+    "Jakin Wang"
+  ],
+  "scripts": {
+    "lint": "eslint ./src/js --ext .js",
+    "lint-fix": "eslint ./src/js --ext .js --fix",
+    "test": "npm run lint && jest",
+    "nolint-test": "jest",
+    "start": "webpack-dev-server --mode development --config webpack.config.js --open --hot --host 0.0.0.0",
+    "build": "webpack --mode=production"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/preset-react": "^7.0.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^10.0.1",
+    "babel-jest": "^25.0.0",
+    "babel-loader": "^8.0.4",
+    "clean-webpack-plugin": "^0.1.19",
+    "css-loader": "^1.0.0",
+    "eslint": "^5.8.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-react": "^7.11.1",
+    "jest": "^25.0.0",
+    "react-test-renderer": "^16.6.0",
+    "style-loader": "^0.23.1",
+    "webpack": "^4.23.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.8.1",
+    "webpack-merge": "^4.1.4"
+  },
+  "dependencies": {
+    "acorn": "^6.0.0",
+    "clsx": "^1.0.4",
+    "prop-types": "^15.6.2",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0"
+  }
+}
