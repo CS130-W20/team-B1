@@ -1,24 +1,12 @@
-version: '3.7'
+version: "3.7"
 
 services:
-  db:
-    container_name: roshambo_db
-    image: postgres:11.1
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=roshambo_db_user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=roshambo_dev
-    volumes:
-      - postgres:/var/lib/postgresql/data
-
   backend:
     build:
       context: .
       dockerfile: backend/Dockerfile
     command: python manage.py runserver 0.0.0.0:8000
-    container_name: roshambo_backend
+    container_name: director_backend
     depends_on:
       - db
     env_file:
@@ -28,7 +16,7 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./backend/:/roshambo
+      - ./backend/:/director
 
   frontend:
     build:
@@ -40,10 +28,8 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - .:/roshambo-ui/
-      - /roshambo-ui/node_modules
-    
+      - .:/director-ui/
+      - /director-ui/node_modules
 
 volumes:
-  postgres:
   backend:

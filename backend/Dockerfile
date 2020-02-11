@@ -4,7 +4,7 @@
 FROM python:3.8.1
 
 # set work directory
-ENV APP_HOME /roshambo
+ENV APP_HOME /director
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
@@ -24,4 +24,4 @@ RUN apt-get update && apt-get install -y netcat
 COPY backend $APP_HOME
 COPY backend/.docker/entrypoint.sh $APP_HOME
 
-ENTRYPOINT ["/roshambo/.docker/entrypoint.sh"]
+ENTRYPOINT ["/director/.docker/entrypoint.sh"]

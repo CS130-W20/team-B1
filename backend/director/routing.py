@@ -1,7 +1,7 @@
-# :: roshambo/routing.py
+# :: director/routing.py
 ###################################################################
 # Routing configuration for Channels. From the docs:
-# a Channels routing configuration is similar to a Django URLconf. 
+# a Channels routing configuration is similar to a Django URLconf.
 # It tells Channels what code to run when an HTTP request is received.
 ###################################################################
 # :: Created By: Benji Brandt <benjibrandt@ucla.edu>

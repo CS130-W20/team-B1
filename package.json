@@ -1,13 +1,13 @@
 {
-  "name": "roshambo",
+  "name": "director",
   "version": "1.0.0",
-  "description": "High stakes rock-paper-scissors.",
+  "description": "Real-time crowdsourced song queue for parties.",
   "contributors": [
+    "Vaibhav Aggarwal <vaibhav.a@ucla.edu>",
     "Benji Brandt <benjibrandt@ucla.edu>",
     "David Macaraeg <dmacaraeg@ucla.edu>",
-    "Akram Sabbah",
-    "Johnson Chou",
-    "Jakin Wang"
+    "Krish Nallamalli <mnallamalli97@ucla.edu>",
+    "Benjamin Yang <yang.benjaminh@gmail.com>"
   ],
   "scripts": {
     "lint": "eslint ./src/js --ext .js",

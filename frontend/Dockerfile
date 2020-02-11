@@ -1,6 +1,6 @@
 FROM node:12.2.0
 
-ENV APP_HOME /roshambo-ui
+ENV APP_HOME /director-ui
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/frontend
 WORKDIR $APP_HOME
