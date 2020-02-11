@@ -7,8 +7,6 @@ services:
       dockerfile: backend/Dockerfile
     command: python manage.py runserver 0.0.0.0:8000
     container_name: director_backend
-    depends_on:
-      - db
     env_file:
       - backend/.env.dev
     expose:
@@ -22,6 +20,7 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
+    container_name: director_frontend
     environment:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
