@@ -43,9 +43,12 @@
   },
   "dependencies": {
     "acorn": "^6.0.0",
+    "bootstrap": "^4.4.1",
     "clsx": "^1.0.4",
     "prop-types": "^15.6.2",
-    "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react": "^16.12.0",
+    "react-bootstrap": "^1.0.0-beta.16",
+    "react-dom": "^16.12.0",
+    "reactstrap": "^8.4.1"
   }
 }
