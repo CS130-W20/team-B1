@@ -6,7 +6,7 @@ const MainScreen = () => {
   return (
   	<React.Fragment>
 	    <p> Hello, world bitches! </p>
-	    <Button color="danger">Danger!</Button>
+	    <Button color="danger">testing....</Button>
 	</React.Fragment>
   );
 }
