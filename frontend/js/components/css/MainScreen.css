@@ -1,0 +1,48 @@
+body {
+    margin: 0;
+}
+
+.MainScreen {
+	/*border: 5px dotted red;*/
+	position: relative;
+	width: 100vw;
+	height: 100vh;
+}
+
+.buttons {
+	/*border: 5px dotted blue;*/
+	position:absolute;
+	bottom: 0;
+	width: 100%;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.btn {
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	display: block;
+	width: 100%;
+	text-align: left;
+	font-size: 30px;
+}
+
+/*green color button */
+.btn-success {
+  color: #fff;
+  background-color: #65DDA5;
+  border-color: #65DDA5;
+}
+
+/*red color button */
+.btn-danger {
+  color: #fff;
+  background-color: #F16170;
+  border-color: #F16170;
+}
+
+
+.btn small {
+	display: block;
+	font-size: 15px;
+}
