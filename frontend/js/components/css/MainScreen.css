@@ -60,6 +60,7 @@ body {
 .title {
 	padding-top: 10px;
 	padding-bottom: 30px;
+	padding-left: 15px;
 	font-size: 25px;
 	font-style: bold;
 	
@@ -97,7 +98,7 @@ body {
 
 /*Join Party 2*/
 .enterName {
-		padding-left: 15px;
+	padding-left: 15px;
 	padding-right: 15px;
 }
 

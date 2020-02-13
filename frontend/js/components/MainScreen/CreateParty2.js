@@ -4,19 +4,19 @@ import '../css/MainScreen.css';
 import { Button } from 'reactstrap';
 
 
-const JoinParty2 = () => {
+const CreateParty2 = () => {
   return (
-  	<div className="JoinParty2">
+  	<div className="CreateParty2">
   	    <div class="title">
-	    	<h1>What is your name? </h1>
+	    	<h1>Name your party </h1>
   		</div>
 
   		<div class="enterName">
-	    	<input type="text"  value= "Name"/>
+	    	<input type="text"  value= "Party Name"/>
   		</div>
 
     	<div className="buttons">
-	    	<Button className="button" color="success"> Join party
+	    	<Button className="button" color="success"> Launch Party!
 	    		<small> Lets get rockin' </small>
 	    	</Button>
   		</div>
@@ -25,4 +25,4 @@ const JoinParty2 = () => {
   );
 }
 
-export default JoinParty2;
+export default CreateParty2;
