@@ -96,10 +96,14 @@ body {
 }
 
 /*Join Party 2*/
+.enterName {
+		padding-left: 15px;
+	padding-right: 15px;
+}
 
 .enterName input {
 	width: 100%;
-	border-color: red;
+	border-radius: 10px;
 	padding: 20px 2px;
 }
 
