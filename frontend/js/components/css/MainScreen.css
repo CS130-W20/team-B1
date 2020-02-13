@@ -1,5 +1,6 @@
 body {
     margin: 0;
+    height: 100%;
 }
 
 .MainScreen {
@@ -46,3 +47,52 @@ body {
 	display: block;
 	font-size: 15px;
 }
+
+
+
+/*Join Party stuff*/
+.JoinParty {
+	height:100%;
+	clear: both;
+}
+
+.title {
+	border: 5px dotted red;
+	padding: 5px 10px 0 0;
+	font-size: 25px;
+	font-style: bold;
+	
+}
+
+.list-group {
+	max-height: 500px;
+    overflow:scroll;
+    -webkit-overflow-scrolling: touch;
+	border: 5px dotted blue;	
+}
+
+.listCard {
+	padding: 20px 5px;
+	border-color: gray;
+	border-radius: 10px;
+	background-color: #EBF0F7;
+	padding-bottom: 25px;
+	margin-bottom: 15px;
+}
+
+
+.note {
+	 flex-grow: 1;
+	border: 5px dotted green;
+	position:absolute;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	
+}
+
+.note p {
+	margin-bottom: 0px;
+}
+
+
