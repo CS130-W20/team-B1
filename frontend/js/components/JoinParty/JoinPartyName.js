@@ -4,9 +4,9 @@ import '../css/MainScreen.css';
 import { Button } from 'reactstrap';
 
 
-const JoinParty2 = () => {
+const JoinPartyName = () => {
   return (
-  	<div className="JoinParty2">
+  	<div className="JoinPartyName">
   	    <div class="title">
 	    	<h1>What is your name? </h1>
   		</div>
@@ -25,4 +25,4 @@ const JoinParty2 = () => {
   );
 }
 
-export default JoinParty2;
+export default JoinPartyName;

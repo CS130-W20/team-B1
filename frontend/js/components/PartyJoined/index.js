@@ -2,7 +2,6 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import '../css/MainScreen.css';
 import { Button } from 'reactstrap';
-import tesft from '../test.png';
 import { Navbar, Nav, Form, FormControl } from 'react-bootstrap'  
 
 
@@ -26,11 +25,6 @@ const PartyJoined = () => {
 
 	    <div className="listViewSongQueue">
 			<div class="list-group">
-
-				<div class="image col-xs-9 ">
-					<img src={tesft} />
-				</div>
-
 				<a href="#" class="list-group-item list-group-item-action col-xs-9 listQueue">
 					fsdfsff
 				</a>
