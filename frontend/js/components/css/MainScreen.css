@@ -68,6 +68,7 @@ body {
 
 .list-group {
 	max-height: 500px;
+	margin: 0 5px;
     overflow:scroll;
     -webkit-overflow-scrolling: touch;	
 }
@@ -107,4 +108,41 @@ body {
 	border-radius: 10px;
 	padding: 20px 2px;
 }
+
+/* Party Joined stuff */
+.listQueue {
+	padding: 20px 5px;
+	border-color: red;
+	border-radius: 10px;
+	background-color: #EBF0F7;
+	padding-bottom: 25px;
+	margin-bottom: 15px;
+	overflow: break-word;
+}
+
+.col-xs-9 {
+  flex-basis: 75%;
+}
+
+.col-xs-3 {
+  flex-basis: 25%;
+}
+
+.input-group.md-form.form-sm.form-1 input {
+  border: 1px solid #bdbdbd;
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
+
+/*search bar*/
+.mr-sm-2{
+	border-radius: 10px;
+}
+
+.searchDiv {
+	padding: 10px;
+	margin: 10px;
+
+}
+
 

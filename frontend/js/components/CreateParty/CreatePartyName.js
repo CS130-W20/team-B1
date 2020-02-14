@@ -4,10 +4,10 @@ import '../css/MainScreen.css';
 import { Button } from 'reactstrap';
 
 
-const CreateParty2 = () => {
+const CreatePartyName = () => {
   return (
-  	<div className="CreateParty2">
-  	    <div class="title">
+  	<div className="CreatePartyName">
+  	  <div class="title">
 	    	<h1>Name your party </h1>
   		</div>
 
@@ -25,4 +25,4 @@ const CreateParty2 = () => {
   );
 }
 
-export default CreateParty2;
+export default CreatePartyName;
