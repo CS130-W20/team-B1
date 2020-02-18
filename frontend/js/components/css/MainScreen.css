@@ -115,18 +115,10 @@ body {
 	border-color: red;
 	border-radius: 10px;
 	background-color: #EBF0F7;
-	padding-bottom: 25px;
 	margin-bottom: 15px;
 	overflow: break-word;
 }
 
-.col-xs-9 {
-  flex-basis: 75%;
-}
-
-.col-xs-3 {
-  flex-basis: 25%;
-}
 
 .input-group.md-form.form-sm.form-1 input {
   border: 1px solid #bdbdbd;
@@ -140,9 +132,35 @@ body {
 }
 
 .searchDiv {
-	padding: 10px;
-	margin: 10px;
+	padding: 20px 5px;
+}
 
+.buttonCard {
+	align-items: right;
+
+}
+
+.SkipButton{
+	font-size: 20px;
+	text-align: center;
+
+}
+
+.albumArtwork {
+	width:80px;
+	height:80px;
+}
+
+.column {
+  float: left;
+}
+
+.left, .right {
+  width: 25%;
+}
+
+.middle {
+  width: 50%;
 }
 
 
