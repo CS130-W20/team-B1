@@ -1,0 +1,166 @@
+body {
+    margin: 0;
+    height: 100%;
+}
+
+.MainScreen {
+	/*border: 5px dotted red;*/
+	position: relative;
+	width: 100vw;
+	height: 100vh;
+}
+
+.buttons {
+	/*border: 5px dotted blue;*/
+	position:absolute;
+	bottom: 0;
+	width: 100%;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.btn {
+	margin-bottom: 10px;
+	padding-bottom: 10px;
+	border-radius: 15px;
+	display: block;
+	width: 100%;
+	text-align: left;
+	font-size: 30px;
+}
+
+/*green color button */
+.btn-success {
+  color: #fff;
+  background-color: #65DDA5;
+  border-color: #65DDA5;
+}
+
+/*red color button */
+.btn-danger {
+  color: #fff;
+  background-color: #F16170;
+  border-color: #F16170;
+}
+
+
+.btn small {
+	display: block;
+	font-size: 15px;
+}
+
+
+
+/*Join Party stuff*/
+.JoinPartyList {
+	height:100%;
+	clear: both;
+}
+
+.title {
+	padding-top: 10px;
+	padding-bottom: 30px;
+	padding-left: 15px;
+	font-size: 25px;
+	font-style: bold;
+	
+}
+
+.list-group {
+	max-height: 500px;
+	margin: 0 5px;
+    overflow:scroll;
+    -webkit-overflow-scrolling: touch;	
+}
+
+.listCard {
+	padding: 20px 5px;
+	border-color: gray;
+	border-radius: 10px;
+	background-color: #EBF0F7;
+	padding-bottom: 25px;
+	margin-bottom: 15px;
+}
+
+
+.note {
+	 flex-grow: 1;
+	position:absolute;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	margin-bottom: 10px;
+	
+}
+
+.note p {
+	margin-bottom: 0px;
+}
+
+/*Join Party 2*/
+.enterName {
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.enterName input {
+	width: 100%;
+	border-radius: 10px;
+	padding: 20px 2px;
+}
+
+/* Party Joined stuff */
+.listQueue {
+	padding: 20px 5px;
+	border-color: red;
+	border-radius: 10px;
+	background-color: #EBF0F7;
+	margin-bottom: 15px;
+	overflow: break-word;
+}
+
+
+.input-group.md-form.form-sm.form-1 input {
+  border: 1px solid #bdbdbd;
+  border-top-right-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}
+
+/*search bar*/
+.mr-sm-2{
+	border-radius: 10px;
+}
+
+.searchDiv {
+	padding: 20px 5px;
+}
+
+.buttonCard {
+	align-items: right;
+
+}
+
+.SkipButton{
+	font-size: 20px;
+	text-align: center;
+
+}
+
+.albumArtwork {
+	width:80px;
+	height:80px;
+}
+
+.column {
+  float: left;
+}
+
+.left, .right {
+  width: 25%;
+}
+
+.middle {
+  width: 50%;
+}
+
+
