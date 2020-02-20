@@ -17,6 +17,9 @@ RUN pip install --upgrade pip
 COPY backend/requirements.txt $APP_HOME
 RUN pip install -r requirements.txt
 
+# install netcat - used in entrypoint.sh
+RUN apt-get update && apt-get install -y netcat
+
 # copy project
 COPY backend $APP_HOME
 COPY backend/.docker/entrypoint.sh $APP_HOME
