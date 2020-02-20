@@ -42,7 +42,7 @@ class PartyManager(models.Manager):
     def findPartyByHost(self, user):
         return self.filter(host=user)
 
-    def findPartyByPartyCode(self, party_code):
+    def findPartyByCode(self, party_code):
         return self.filter(party_code=party_code)
     
     def createParty(self, host):

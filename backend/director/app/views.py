@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from director.app.serializers import UserSerializer, SongSerializer, SongRequestSerializer
-from director.app.models import Song, SongRequest, User
+from director.app.serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer
+from director.app.models import Song, SongRequest, User, Party
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -17,3 +17,6 @@ class SongViewSet(viewsets.ModelViewSet):
     queryset = Song.objects.all()
     serializer_class = SongSerializer
 
+class PartyViewSet(viewsets.ModelViewSet):
+    queryset = Party.objects.all()
+    serializer_class = PartySerializer
