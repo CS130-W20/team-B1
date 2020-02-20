@@ -9,6 +9,7 @@ services:
     container_name: director_backend
     env_file:
       - backend/.env.dev
+      - backend/spotify.env
     expose:
       - 8000
     ports:
