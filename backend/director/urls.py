@@ -27,5 +27,6 @@ router.register(r'songrequests', views.SongRequestViewSet)
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('login/', views.MusicService.as_view()),
+    path('login/', views.MusicServiceFactory.as_view()),
+    path('spotify/', views.MusicService.as_view())
 ]

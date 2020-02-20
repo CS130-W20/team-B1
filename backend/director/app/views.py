@@ -2,6 +2,7 @@
 
 import os
 import requests
+import json
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -21,6 +22,8 @@ SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
 SPOTIPY_REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI')
 SCOPE = 'user-read-private playlist-modify-public streaming'
+SPOTIFY_SEARCH_URL = 'https://api.spotify.com/v1/search'
+
 
 # spotipy requiries a username or a cache for some bizarre reason, but you can feed it a bs name
 spotify_oauth = oauth2.SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, scope=SCOPE, username='__')
@@ -43,30 +46,32 @@ class SongViewSet(viewsets.ModelViewSet):
     serializer_class = SongSerializer
 
 
-class MusicServiceFactory(APIView):
-    """
-    TODO: doc
-    """
-    def get(self, request, format='json'):
-        return Response(status=status.HTTP_204_NO_CONTENT) # TODO: stub
-
-
-
-    def put(self, request, format='json'):
-        return Response(status=status.HTTP_204_NO_CONTENT) # TODO: stub
-    
-
-    # def _validate_get_request(self, request):
-    #     if not request.data:
-    #         raise ValidationError({'error': 'request is empty'}, code='invalid')
-
-    #     if not request.data.username:
-    #         raise ValidationError({'error': 'Username is required'}, code='invalid')
-
-
 class MusicService(APIView):
     """
-    TODO: doc
+    Interacts with the spotify API, based on the passed token, and returns the results.
+    @params: {'query': a valid query to search for songs}
+    """
+    def get(self, request, format='json'):
+        self._validate_get_request(request)
+        search_url = '{}?q={}&type=track'.format(SPOTIFY_SEARCH_URL, request.data['query'])
+        resp = requests.get(search_url, headers={'Authorization': 'Bearer {}'.format(request.data['token'])})
+        return Response(json.loads(resp.text), status=resp.status_code)
+
+    def _validate_get_request(self, request):
+        if not request.data:
+            raise ValidationError({'error': 'request is empty'}, code='invalid')
+
+        if not request.data.get('query'):
+            raise ValidationError({'error': 'Search request must specify query string.'}, code='invalid')
+
+        if not request.data.get('token'):
+            raise ValidationError({'error': 'Search request must specify valid Spotify API token.'}, code='invalid')
+
+
+class MusicServiceFactory(APIView):
+    """
+    @GET: returns the redirect URL for spotify OAuth login.
+    @POST: takes {'code': code_generated_by_spotify_oauth}. Saves user, and returns their info and token.
     """
     def get(self, request, format='json'):
         auth_url = spotify_oauth.get_authorize_url()
