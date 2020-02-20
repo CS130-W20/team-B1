@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.crypto import get_random_string
 
 class Song(models.Model):
     # the custom song_id will be that coming from the music provider
@@ -36,3 +37,25 @@ class SongRequest(models.Model):
     def __str__(self):
         return f"Request for {self.song}"
 
+class PartyManager(models.Manager):
+
+    def findPartyByHost(self, user):
+        return self.filter(host=user)
+
+    def findPartyByPartyCode(self, party_code):
+        return self.filter(party_code=party_code)
+    
+    def createParty(self, host):
+        # generate host code until unique
+        party_code = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+        while self.filter(party_code=party_code):
+            party_code = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+        # create new party instance
+        party = self.create(host=host, party_code=party_code)
+        return party
+
+class Party(models.Model):
+    host = models.ForeignKey(User, on_delete=models.CASCADE)
+    party_code = models.CharField(max_length=4, unique=True)
+    objects = PartyManager()
+    # put more fields here
