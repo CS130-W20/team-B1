@@ -1,6 +1,6 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css';
-import '../css/MainScreen.css';
+// import 'bootstrap/dist/css/bootstrap.css';
+// import '../css/MainScreen.css';
 import { Button } from 'reactstrap';
 
 

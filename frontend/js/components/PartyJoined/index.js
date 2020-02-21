@@ -1,6 +1,6 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.css';
-import '../css/MainScreen.css';
+// import 'bootstrap/dist/css/bootstrap.css';
+// import '../css/MainScreen.css';
 import { Button } from 'reactstrap';
 import { Navbar, Nav, Form, FormControl } from 'react-bootstrap'  
 
@@ -38,18 +38,8 @@ const PartyJoined = () => {
 						<Button className="SkipButton" color="danger">Skip</Button>
 					</div>
 				</a>
-
 			</div>
 	  	</div>
-
-
-
-
-
-
-
-
-
   	</div>
 
   );
