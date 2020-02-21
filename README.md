@@ -17,8 +17,7 @@ Director is a full-stack web app, designed to be the premiere destination for pa
 ## Testing
 
 -  To test frontend components, run `npm run test`.
--  To test backend components, run `TODO: fill this in`.
--  TODO: travis ci.
+-  To test backend components, run `docker exec -it director_backend manage.py test`.
 
 ## Cleanup
 
@@ -33,3 +32,8 @@ Director is a full-stack web app, designed to be the premiere destination for pa
 ## Tech Stack Description
 
 Director is built using Django and React. Django incorporates Django Channels, and the Django Rest Framework. React utilizes React Bootstrap. Refer to `backend/requirements.txt` for specific packages used in the backend, and to `package.json` for specific packages used in the frontend.
+
+## Directory Structure
+- backend contains all components for the backend, in Django Directory Structure
+    - Tests are thus in /backend/direcor/tests.py
+- frontend contains all components for the frontend, with React components placed in /frontend/js/components, and tests in /frontend/js/tests
