@@ -1,11 +1,11 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
 
-import JoinPartyName from './JoinPartyName';
+import SpotifyLogin from '../CreateParty/SpotifyLogin';
 
 describe ('Testing Spotify Login Page', () => {
     it('correctly renders', () => {
-        const wrapper = renderer.create(<JoinPartyName />).toJSON();
+        const wrapper = renderer.create(<SpotifyLogin />).toJSON();
         expect(wrapper).toMatchSnapshot();
     });
 });

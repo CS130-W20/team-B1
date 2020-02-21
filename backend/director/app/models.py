@@ -15,6 +15,7 @@ class User(models.Model):
     # django assigns a primary key id by default
     name = models.CharField(max_length=50)
     join_time = models.DateTimeField(auto_now_add=True)
+    
     def get_song_requests(self):
         return self.songs_requested.all()
     def get_song_skip_requests(self):

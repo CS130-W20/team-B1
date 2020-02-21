@@ -1,7 +1,7 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
 
-import CreatePartyName from './CreatePartyName';
+import CreatePartyName from '../CreateParty/CreatePartyName';
 
 describe ('Testing Create Party Name Page', () => {
     it('correctly renders', () => {

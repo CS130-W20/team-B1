@@ -175,3 +175,7 @@ dist
 
 # Django SQLite Stuff
 db.sqlite3
+
+# Spotify Stuff
+spotify.env
+.cache-__

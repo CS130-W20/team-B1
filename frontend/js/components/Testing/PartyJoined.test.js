@@ -1,11 +1,11 @@
 import React from 'react';
 import renderer from 'react-test-renderer';
 
-import JoinPartyList from './JoinPartyList';
+import PartyJoined from '../PartyJoined/index';
 
 describe ('Testing Spotify Login Page', () => {
     it('correctly renders', () => {
-        const wrapper = renderer.create(<JoinPartyList />).toJSON();
+        const wrapper = renderer.create(<PartyJoined />).toJSON();
         expect(wrapper).toMatchSnapshot();
     });
 });
