@@ -49,9 +49,16 @@ class SongViewSet(viewsets.ModelViewSet):
 class MusicService(APIView):
     """
     Interacts with the spotify API, based on the passed token, and returns the results.
-    @params: {'query': a valid query to search for songs}
     """
     def get(self, request, format='json'):
+        """
+        :method: GET
+        :param str query: a valid search query constructed via URL notation to apply to Spotify's backend.
+        :rtype: json
+        :return: 
+            key: id, album_art, song
+            value: a list of all tracks matching the query, with their associated info
+        """
         self._validate_get_request(request)
         search_url = '{}?q={}&type=track'.format(SPOTIFY_SEARCH_URL, request.data['query'])
         resp = requests.get(search_url, headers={'Authorization': 'Bearer {}'.format(request.data['token'])})
@@ -70,19 +77,35 @@ class MusicService(APIView):
 
 class MusicServiceFactory(APIView):
     """
-    @GET: returns the redirect URL for spotify OAuth login.
-    @POST: takes {'code': code_generated_by_spotify_oauth}. Saves user, and returns their info and token.
+    Handles the authorization flow for Spotify via OAuth2.
     """
     def get(self, request, format='json'):
+        """
+        :rtype: json
+        :return: 
+            key: location
+            value: the spotify authorization URL, to be requested to obtain login via Spotify UI.
+        """
         auth_url = spotify_oauth.get_authorize_url()
         return Response({'location': auth_url}, status=status.HTTP_302_FOUND)
 
     def post(self, request, format='json'):
+        """
+        :param str code: the spotify authorization code, provided by calling the URL returned by GET.
+        :rtype: json
+        :return:
+            key: user, token
+            value: the user's spotify info, and their authorization token for making Spotify API requests
+        """
         code = request.data.get('code')
         if not code:
             return Response({'error': 'Must specify spotify code.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        token_info = spotify_oauth.get_access_token(code)
+        try: 
+            token_info = spotify_oauth.get_access_token(code)
+        except:
+            return Response({'error': 'Spotify OAuth call failed due to a bad request.'}, status=status.HTTP_400_BAD_REQUEST)
+
         access_token = token_info['access_token']
 
         if not access_token:
