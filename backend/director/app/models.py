@@ -67,32 +67,36 @@ class PartyManager(models.Manager):
     def findPartyByHost(self, user):
         return self.filter(host=user)
 
-    def findPartyByCode(self, party_code):
-        return self.filter(party_code=party_code)
+    def findPartyByCode(self, host_code):
+        return self.filter(host_code=host_code)
     
-    def createParty(self, host, skipPercentageThreshold=0.25):
+    def createParty(self, host, name=None, skipPercentageThreshold=0.25):
+        if not name:
+            name = host.name + "'s party"
+
         # generate host code until unique
-        party_code = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
-        while self.filter(party_code=party_code):
-            party_code = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+        host_code = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+        while self.filter(host_code=host_code):
+            host_code = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
         # create new party instance
         # create party queue instance
         queue = PartyQueue.objects.create()
-        party = self.create(host=host, party_code=party_code, skipPercentageThreshold=skipPercentageThreshold, queue=queue)
+        party = self.create(host=host, host_code=host_code, name=name, skipPercentageThreshold=skipPercentageThreshold, queue=queue)
         return party
 
 class Party(models.Model):
     host = models.ForeignKey(User, on_delete=models.CASCADE, related_name='host')
     guests = models.ManyToManyField(User, related_name='guests')
-    party_code = models.CharField(max_length=4, unique=True)
+    host_code = models.CharField(max_length=4, unique=True)
     objects = PartyManager()
+    name = models.CharField(max_length=25, default='Party')
 
     skipPercentageThreshold = models.FloatField(default=0.25)
     queue = models.ForeignKey(PartyQueue, on_delete=models.CASCADE, default=None)
     # TODO: musicService
 
     def getGuests(self):
-        return self.guests
+        return self.guests.all()
     
     def join(self, name):
         user = User.objects.create(name=name)
