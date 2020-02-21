@@ -33,6 +33,8 @@ Director is a full-stack web app, designed to be the premiere destination for pa
 
 Director is built using Django and React. Django incorporates Django Channels, and the Django Rest Framework. React utilizes React Bootstrap. Refer to `backend/requirements.txt` for specific packages used in the backend, and to `package.json` for specific packages used in the frontend.
 
+API Documentation can be viewed at localhost:8000/docs.
+
 ## Directory Structure
 - backend contains all components for the backend, in Django Directory Structure
     - Tests are thus in /backend/direcor/tests.py

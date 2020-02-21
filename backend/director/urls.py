@@ -28,5 +28,8 @@ router.register(r'songrequests', views.SongRequestViewSet)
 urlpatterns = [
     path('api/', include(router.urls)),
     path('login/', views.MusicServiceFactory.as_view(), name='login'),
-    path('spotify/', views.MusicService.as_view(), name='spotify')
+    path('spotify/', views.MusicService.as_view(), name='spotify'),
+    path('docs/',
+         views.schema_view.with_ui('swagger', cache_timeout=0),
+         name='schema-swagger-ui'),
 ]
