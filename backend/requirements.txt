@@ -12,6 +12,7 @@ daphne==2.4.1
 Django==3.0.3
 django-cors-headers==3.2.1
 djangorestframework==3.11.0
+drf-yasg==1.17.1
 hyperlink==19.0.0
 idna==2.8
 incremental==17.5.0

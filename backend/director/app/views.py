@@ -9,7 +9,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.serializers import ValidationError
 from rest_framework.views import APIView
-from rest_framework import viewsets
+from rest_framework import permissions, viewsets
+
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
 import spotipy
 import spotipy.util
@@ -98,3 +101,14 @@ class MusicServiceFactory(APIView):
         user.save()
 
         return Response({'user': UserSerializer(user, context={'request': request}).data, 'token': access_token}, status=status.HTTP_200_OK)
+
+schema_view = get_schema_view(
+   openapi.Info(
+      title="Director API",
+      default_version='v1',
+      description="Real-time music queue for parties",
+   ),
+   public=True,
+   permission_classes=(permissions.AllowAny,),
+)
+
