@@ -40,11 +40,17 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class SongRequestViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows song requests to be viewed or edited.
+    """
     queryset = SongRequest.objects.all()
     serializer_class = SongRequestSerializer
 
 
 class SongViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows songs to be viewed or edited.
+    """
     queryset = Song.objects.all()
     serializer_class = SongSerializer
 
