@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.urls import include, path
 from rest_framework import routers
-from director.app import views
+from .app import views
 
 router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
@@ -28,4 +28,9 @@ router.register(r'parties', views.PartyViewSet)
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('api/', include(router.urls)),
+    path('login/', views.MusicServiceFactory.as_view(), name='login'),
+    path('spotify/', views.MusicService.as_view(), name='spotify'),
+    path('docs/',
+         views.schema_view.with_ui('swagger', cache_timeout=0),
+         name='schema-swagger-ui'),
 ]
