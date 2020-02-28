@@ -18,8 +18,8 @@ import spotipy
 import spotipy.util
 from spotipy import oauth2
 
-from .serializers import UserSerializer, SongSerializer, SongRequestSerializer
-from .models import Song, SongRequest, User
+from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer
+from .models import Song, SongRequest, User, Party
 
 SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
@@ -33,7 +33,6 @@ spotify_oauth = oauth2.SpotifyOAuth(SPOTIPY_CLIENT_ID,
                                     SPOTIPY_REDIRECT_URI,
                                     scope=SCOPE,
                                     username='__')
-
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -58,6 +57,12 @@ class SongViewSet(viewsets.ModelViewSet):
     queryset = Song.objects.all()
     serializer_class = SongSerializer
 
+class PartyViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows parties to be viewed or edited.
+    """
+    queryset = Party.objects.all()
+    serializer_class = PartySerializer
 
 class MusicService(APIView):
     """
