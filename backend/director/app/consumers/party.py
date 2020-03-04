@@ -1,0 +1,227 @@
+# director/consumers/party.py
+
+from channels.generic.websocket import AsyncWebsocketConsumer
+from rest_framework import status
+
+import json
+
+from .model_interactions.handlers import join_party, leave_party
+
+class PartyConsumer(AsyncWebsocketConsumer):
+    #------------------------------------------------------------------
+    # Web Socket Communicators
+    #------------------------------------------------------------------
+    async def connect(self):
+        """
+        Called when first connecting to the socket. Checks if player can join a party as requested, and joins them if they can.
+        """
+        self.party_code = self.scope['party_code']
+
+        successful, reason, user = await join_party(self.scope['user'], self.party_code)
+
+        if not successful:
+            await self.accept()
+            await self._send_response(
+                {
+                    'error': reason
+                }, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            await self.close()
+            return
+
+        self.user = user
+
+        # Join match's channel group
+        await self.channel_layer.group_add(
+            self.party_code,
+            self.channel_name
+        )
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        """
+        Ensures proper cleanup upon leaving.
+        """
+        if self.user is None:
+            # Do nothing if we early-aborted for an invalid join
+            return
+
+        await leave_party(self.user.id, self.party_code)
+
+        await self.channel_layer.group_discard(
+            self.party_code,
+            self.channel_name
+        )
+
+    async def receive(self, text_data):
+        """
+        Parses incoming requests along the Websocket, and passes to the appropriate command handler.
+        """
+        data = json.loads(text_data)
+        if not await self._request_valid(data):
+            return
+
+        command = data['command']
+        await self.dispatch_command[command](self, data)
+
+    #------------------------------------------------------------------
+    # Channel Event Handlers
+    # ALL of these can ONLY be called by a call to group_send(), and so must have come from an internal source.
+    #------------------------------------------------------------------
+    async def chat_message(self, event):
+        """
+        Send a received chat message to all users.
+        """
+        message = event['message']
+        user = event['user']
+
+        await self._send_channel_message({
+            'user': user,
+            'command': 'chat',
+            'message': message
+        })
+
+    #------------------------------------------------------------------
+    # Command Processors
+    #------------------------------------------------------------------
+    async def _process_chat_command(self, data):
+        """
+        Handle incoming chat-related commands.
+        """
+        message = data['message']
+        user = self.user.name
+
+        # Send message to match group
+        await self.channel_layer.group_send(
+            self.match_group_id,
+            {
+                'type': 'chat_message',
+                'message': message,
+                'user': user
+            }
+        )
+        await self._send_response(status=status.HTTP_204_NO_CONTENT, id=data['id'])
+
+    async def _process_veto_command(self, data):
+        return False # TODO: stub
+
+    async def _process_request_skip_command(self, data):
+        return False # TODO: stub
+
+    async def _process_add_song_command(self, data):
+        return False # TODO: stub
+
+    #------------------------------------------------------------------
+    # Data Validation
+    #------------------------------------------------------------------
+    async def _request_valid(self, data):
+        """
+        Determines if a request is formatted properly, with all appropriate arguments.
+        """
+        if 'id' not in data:
+            await self._send_response({
+                'error': 'all requests must include an \'id\' key, valued with a unique integer.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if 'command' not in data:
+            await self._send_response({
+                'error': 'request must include key \'command\', valued with one of {}.'.format(self.command_groups)
+            }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+            return False
+
+        command_group = data['command']
+        if command_group not in self.command_groups:
+            await self._send_response({
+                'error': '{} is not a valid command.'.format(command_group)
+            }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+            return False
+
+        if command_group in non_keyed_command_groups:
+            return True
+
+        if not await self._command_valid(data, command_group):
+            return False
+
+        return True
+
+    async def _command_valid(self, data, command_group):
+        """
+        Determines if the necessary arguments have been provided for a request asking for a command in command_group.
+        """
+        switch = {
+            'add_song': self.add_song_commands,
+            'chat': self.chat_commands,
+        }
+
+        commands = switch[command_group]
+        for command in commands:
+            if command in data:
+                if command_group == 'chat':
+                    if not isinstance(data[command], str):
+                        await self._send_response({
+                            'error': 'chat request must include key \'message\' valued to a string.'
+                        }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+                        return False
+                elif command_group == 'add_song':
+                    error_package = {
+                        'error': 'add song request must include key \'song\' valued to a valid Spotify URI.'
+                    }
+                    if not isinstance(data[command], str):
+                        await self._send_response(error_package, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+                        return False
+                    contains_prefix = data[command].find('spotify:track:') != -1
+                    # we don't have to do more complex checking because _process_add_song will check 
+                    # the model to see if it was properly added already, and reject if not
+                    if not contains_prefix:
+                        await self._send_response(error_package, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+                        return False
+                return True
+                
+
+        await self._send_response({
+                'error': '{} request must include key from {}.'.format(command_group, commands)
+            }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+        return False
+
+    #------------------------------------------------------------------
+    # Command Definitions
+    #------------------------------------------------------------------
+    # these are specified for doc's sake -- no user can call these, only .send_group() messages can
+    channel_commands = [] # TODO: fill this out
+    # these are commands which can be called by the user within a command group, hence available in dispatch_command
+    chat_commands = ['message']
+    add_song_commands = ['song']
+    # non-keyed command groups are ones which need no further info from the user other than the command itself
+    non_keyed_command_groups = ['request_skip', 'veto']
+    command_groups = ['request_skip', 'chat', 'veto', 'add_song']
+    dispatch_command = {
+        'veto': _process_veto_command,
+        'request_skip': _process_request_skip_command,
+        'add_song': _process_add_song_command,
+        'chat': _process_chat_command,
+    }
+
+    #------------------------------------------------------------------
+    # Utilities
+    #------------------------------------------------------------------
+    async def _send_response(self, data = {}, status=status.HTTP_200_OK, id = None): # yes, yes HTTP codes aren't technically correct here, but whatever
+        """
+        Small wrapper around self.send so we don't have to specify json.dumps and text_data each time we send.
+        Intended to send to sockets/clients, not to the channel.
+        :param dict data: the data to send.
+        :param int status: the status code of the message. Uses HTTP statuses for simplicity. Defaults to 200 OK.
+        :param int id: the request id, as per websocket as promised. Excluded if not specified.
+        """
+        data['status'] = status
+        if id is not None: data['id'] = id
+        await self.send(text_data=json.dumps(data))
+
+    async def _send_channel_message(self, data):
+        """
+        Same as _send_response, but it is a message which originated from the channel (hence no status, nor request ID).
+        This way, on the user's end, they know this not in response to some request they made.
+        :param dict data: the data to send.
+        """
+        await self.send(text_data=json.dumps(data))

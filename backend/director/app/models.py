@@ -3,7 +3,7 @@ from django.utils.crypto import get_random_string
 
 class Song(models.Model):
     # the custom song_id will be that coming from the music provider
-    song_id = models.CharField(max_length=25, primary_key=True)
+    song_id = models.CharField(max_length=30, primary_key=True)
     name = models.CharField(max_length=50)
     artist = models.CharField(max_length=50)
     album = models.CharField(max_length=50)
@@ -104,6 +104,13 @@ class Party(models.Model):
         self.guests.add(user)
         return user
 
+    def leave(self, user_id):
+        """
+        :raises: if user with user_id not in guest list.
+        """
+        guest = self.guests.get(id=user_id)
+        guest.delete()
+        
     def searchForSong(self, query):
         # TODO
         pass

@@ -137,6 +137,16 @@ STATIC_URL = '/static/'
 # Channels configuration
 ASGI_APPLICATION = 'director.routing.application'
 
+# Channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(os.environ.get("REDIS_URL"), 6379)],
+        },
+    },
+}
+
 # we whitelist localhost:3000 because that's where frontend will be served
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',

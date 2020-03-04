@@ -7,8 +7,20 @@
 # :: Created By: Benji Brandt <benjibrandt@ucla.edu>
 # :: Creation Date: 12 January 2020
 
-from channels.routing import ProtocolTypeRouter
+from channels.routing import ProtocolTypeRouter, URLRouter
+from django.urls import re_path
+from channels.auth import AuthMiddlewareStack
+
+from .app.consumers import PartyConsumer
+
+websocket_urlpatterns = [
+    re_path(r'ws/party/$', PartyConsumer),
+]
 
 application = ProtocolTypeRouter({
-    # (http->django views is added by default)
+    "websocket": AuthMiddlewareStack(
+            URLRouter(
+                websocket_urlpatterns
+            )
+        ),
 })
