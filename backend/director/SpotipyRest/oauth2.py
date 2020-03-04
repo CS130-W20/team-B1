@@ -1,9 +1,9 @@
 # director/SpotipyRest/oauth2
 # Modification of some of Spotipy's Oauth features, so that we aren't locked into their opinionated caching of tokens
 
-from spotipy.oauth2 import SpotifyOauth
+from spotipy import oauth2
 
-class SpotifyOAuthRest(SpotifyOAuth):
+class SpotifyOAuthRest(oauth2.SpotifyOAuth):
     def get_cached_token(self):
         """
         Same as spotipy.oauth2.SpotifyOauth's version, except allows us to bypass having a cached token.

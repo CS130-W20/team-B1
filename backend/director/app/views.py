@@ -22,12 +22,12 @@ from ..SpotipyRest.oauth2 import SpotifyOAuthRest
 from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer
 from .models import Song, SongRequest, User, Party
 
-SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
-SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
-SPOTIPY_REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI')
-SCOPE = 'user-read-private playlist-modify-public streaming'
-SPOTIFY_SEARCH_URL = 'https://api.spotify.com/v1/search'
-
+spotify_oauth = SpotifyOAuthRest(
+    django_settings.SPOTIPY_CLIENT_ID, 
+    django_settings.SPOTIPY_CLIENT_SECRET, 
+    django_settings.SPOTIPY_REDIRECT_URI, 
+    scope=django_settings.SPOTIPY_SCOPE
+)
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -102,13 +102,6 @@ class MusicService(APIView):
 
 
 class MusicServiceFactory(APIView):
-    def __init__(self):
-        spotify_oauth = SpotifyOAuthRest(
-            django_settings.SPOTIPY_CLIENT_ID, 
-            django_settings.SPOTIPY_CLIENT_SECRET, 
-            django_settings.SPOTIPY_REDIRECT_URI, 
-            scope=django_settings.SPOTIPY_SCOPE
-        )
     """
     Handles the authorization flow for Spotify via OAuth2.
     """
@@ -119,7 +112,7 @@ class MusicServiceFactory(APIView):
             key: location
             value: the spotify authorization URL, to be requested to obtain login via Spotify UI.
         """
-        auth_url = self.spotify_oauth.get_authorize_url()
+        auth_url = spotify_oauth.get_authorize_url()
         return Response({'location': auth_url}, status=status.HTTP_302_FOUND)
 
     def post(self, request, format='json'):
@@ -136,7 +129,7 @@ class MusicServiceFactory(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
 
         try: 
-            token_info = self.spotify_oauth.get_access_token(code, as_dict=False)
+            token_info = spotify_oauth.get_access_token(code)
         except:
             return Response(
                 {'error': 'Spotify OAuth call failed due to a bad request.'},
