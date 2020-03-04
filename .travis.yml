@@ -3,6 +3,7 @@ services:
     - docker
 
 before_install:
+    - echo "SPOTIPY_CLIENT_ID=$SPOTIPY_CLIENT_ID\nSPOTIPY_CLIENT_SECRET=$SPOTIPY_CLIENT_SECRET\nSPOTIPY_REDIRECT_URI=$SPOTIPY_REDIRECT_URI" >> backend/spotify.env
     - docker-compose up --build -d
     - docker ps
 
