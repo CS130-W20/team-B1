@@ -4,6 +4,8 @@ import os
 import requests
 import json
 
+from django.conf import settings as django_settings
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -14,9 +16,8 @@ from rest_framework import permissions, viewsets
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-import spotipy
-import spotipy.util
-from spotipy import oauth2
+from spotipy import Spotify
+from ..SpotipyRest.oauth2 import SpotifyOAuthRest
 
 from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer
 from .models import Song, SongRequest, User, Party
@@ -27,12 +28,6 @@ SPOTIPY_REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI')
 SCOPE = 'user-read-private playlist-modify-public streaming'
 SPOTIFY_SEARCH_URL = 'https://api.spotify.com/v1/search'
 
-# spotipy requiries a username or a cache for some bizarre reason, but you can feed it a bs name
-spotify_oauth = oauth2.SpotifyOAuth(SPOTIPY_CLIENT_ID,
-                                    SPOTIPY_CLIENT_SECRET,
-                                    SPOTIPY_REDIRECT_URI,
-                                    scope=SCOPE,
-                                    username='__')
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -107,6 +102,13 @@ class MusicService(APIView):
 
 
 class MusicServiceFactory(APIView):
+    def __init__(self):
+        spotify_oauth = SpotifyOAuthRest(
+            django_settings.SPOTIPY_CLIENT_ID, 
+            django_settings.SPOTIPY_CLIENT_SECRET, 
+            django_settings.SPOTIPY_REDIRECT_URI, 
+            scope=django_settings.SPOTIPY_SCOPE
+        )
     """
     Handles the authorization flow for Spotify via OAuth2.
     """
@@ -117,7 +119,7 @@ class MusicServiceFactory(APIView):
             key: location
             value: the spotify authorization URL, to be requested to obtain login via Spotify UI.
         """
-        auth_url = spotify_oauth.get_authorize_url()
+        auth_url = self.spotify_oauth.get_authorize_url()
         return Response({'location': auth_url}, status=status.HTTP_302_FOUND)
 
     def post(self, request, format='json'):
@@ -133,8 +135,8 @@ class MusicServiceFactory(APIView):
             return Response({'error': 'Must specify spotify code.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            token_info = spotify_oauth.get_access_token(code)
+        try: 
+            token_info = self.spotify_oauth.get_access_token(code, as_dict=False)
         except:
             return Response(
                 {'error': 'Spotify OAuth call failed due to a bad request.'},
@@ -146,17 +148,19 @@ class MusicServiceFactory(APIView):
             return Response({'error': 'Spotify OAuth call failed.'},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        spotify = spotipy.Spotify(access_token)
+        spotify = Spotify(access_token)
         spotify_data = spotify.current_user()
 
         if spotify_data.get('product') != 'premium':
             return Response(
                 {
-                    'error':
-                    'The user account provided is not a Spotify Premium account!'
-                },
-                status=status.HTTP_403_FORBIDDEN)
-
+                    'error': 'The user account provided is not a Spotify Premium account!'
+                }, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # TODO(benjibrandt): this is problematic
+        # we don't want to save a new user every time... gotta store something more unique in the model relevant to Spotify for lookup at a later date
         user = User(name=spotify_data.get('display_name'))
         user.save()
 
