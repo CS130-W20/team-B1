@@ -147,4 +147,4 @@ CORS_ORIGIN_WHITELIST = (
 SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
 SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
 SPOTIPY_REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI')
-SPOTIPY_SCOPE = 'user-read-private playlist-modify-public streaming'
+SPOTIPY_SCOPE = 'user-read-private user-read-email playlist-modify-public user-library-read user-library-modify user-read-playback-state user-modify-playback-state streaming'

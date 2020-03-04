@@ -1,10 +1,10 @@
 import React from 'react';
-// import 'bootstrap/dist/css/bootstrap.css';
-// import '../css/MainScreen.css';
 import { Button } from 'reactstrap';
-
+import SpotifyWebPlayer from 'react-spotify-web-playback';
+import '../css/SpotifyPlayer.css';
 
 const CreatePartyName = (props) => {
+	console.log(localStorage.getItem('token'))
   return (
   	<div className="CreatePartyName">
   	  <div class="title">
@@ -20,6 +20,18 @@ const CreatePartyName = (props) => {
 	    		<small> Lets get rockin' </small>
 	    	</Button>
   		</div>
+			<SpotifyWebPlayer
+				autoPlay
+				callback={() => {console.log("LOL")}}
+				persistDeviceSelection
+				play={false}
+				showSaveIcon
+				token={localStorage.getItem('token')}
+				styles={{
+					sliderColor: '#1cb954',
+				}}
+				uris={['spotify:track:15qYihuKGFtQPnjsUX3CQO', 'spotify:track:1CWSbYQIA0XW4AQXvR4OLf',]}
+			/>
   	</div>
 
   );
