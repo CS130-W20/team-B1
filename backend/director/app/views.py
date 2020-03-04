@@ -153,7 +153,7 @@ class MusicServiceFactory(APIView):
             )
         
         try:
-            User.objects.get(spotify_id=spotify_data.get('id'))
+            user = User.objects.get(spotify_id=spotify_data.get('id'))
         except:
             user = User(name=spotify_data.get('display_name'), spotify_id=spotify_data.get('id'))
             user.save()
