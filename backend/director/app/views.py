@@ -152,10 +152,11 @@ class MusicServiceFactory(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
         
-        # TODO(benjibrandt): this is problematic
-        # we don't want to save a new user every time... gotta store something more unique in the model relevant to Spotify for lookup at a later date
-        user = User(name=spotify_data.get('display_name'))
-        user.save()
+        try:
+            User.objects.get(spotify_id=spotify_data.get('id'))
+        except:
+            user = User(name=spotify_data.get('display_name'), spotify_id=spotify_data.get('id'))
+            user.save()
 
         return Response(
             {
