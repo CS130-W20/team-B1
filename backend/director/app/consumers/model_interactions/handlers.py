@@ -5,7 +5,7 @@ from channels.db import database_sync_to_async
 
 from rest_framework.serializers import ValidationError
 
-from ...models import PartyManager, Song
+from ....models import Party, Song
 
 @database_sync_to_async
 def join_party(username, party_code):
@@ -21,7 +21,7 @@ def join_party(username, party_code):
         User object representing the joined user. None if party cannot be joined.
         Party object representing the joined party. None if party cannot be joined.
     """
-    parties_matching_code = PartyManager.findPartyByCode(party_code)
+    parties_matching_code = Party.objects.findPartyByCode(party_code)
 
     if len(parties_matching_code) < 1:
         return False, 'Party {} does not exist!'.format(party_code), None, None

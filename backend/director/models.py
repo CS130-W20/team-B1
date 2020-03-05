@@ -1,5 +1,44 @@
+from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 from django.utils.crypto import get_random_string
+from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+
+
+class Token(models.Model):
+    """
+    The default authorization token model.
+    Disgusting duplicate of DRF's token because we can't override model fields in Django >:(
+    Only changes the key field to be big enough to store Spotify tokens
+    """
+    key = models.TextField(_("Key"), primary_key=True)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name='spotify_token',
+        on_delete=models.CASCADE, verbose_name=_("User")
+    )
+    created = models.DateTimeField(_("Created"), auto_now_add=True)
+
+    class Meta:
+        # Work around for a bug in Django:
+        # https://code.djangoproject.com/ticket/19422
+        #
+        # Also see corresponding ticket:
+        # https://github.com/encode/django-rest-framework/issues/705
+        abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
+        verbose_name = _("Token")
+        verbose_name_plural = _("Tokens")
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super().save(*args, **kwargs)
+
+    def generate_key(self):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return self.key
+
 
 class Song(models.Model):
     # the custom song_id will be that coming from the music provider
@@ -12,11 +51,21 @@ class Song(models.Model):
     def __str__(self):
         return f"{self.name} by {self.artist} (id: {self.song_id})"
 
-class User(models.Model):
+class User(AbstractBaseUser):
     # django assigns a primary key id by default
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     join_time = models.DateTimeField(auto_now_add=True)
     spotify_id = models.TextField(unique=True)
+
+    # get rid of unnecessary fields inherited
+    password = None
+    is_active = None
+    last_login = None
+
+    # Since this will act as the AUTH_MODEL, need to define required fields
+    REQUIRED_FIELDS = ()
+    # Must also set USERNAME field
+    USERNAME_FIELD = 'name'
     
     def get_song_requests(self):
         return self.songs_requested.all()
@@ -108,6 +157,10 @@ class Party(models.Model):
         """
         :raises: if user with user_id not in guest list.
         """
+        user = User.objects.get(id=user_id)
+        if user == host:
+            # TODO: what to do if a host tries to leave?
+            pass
         guest = self.guests.get(id=user_id)
         guest.delete()
         

@@ -3,6 +3,7 @@
 import os
 import requests
 import json
+from datetime import datetime
 
 from django.conf import settings as django_settings
 
@@ -20,7 +21,7 @@ from spotipy import Spotify
 from ..SpotipyRest.oauth2 import SpotifyOAuthRest
 
 from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer
-from .models import Song, SongRequest, User, Party
+from ..models import Song, SongRequest, User, Party, Token
 
 spotify_oauth = SpotifyOAuthRest(
     django_settings.SPOTIPY_CLIENT_ID, 
@@ -157,6 +158,17 @@ class MusicServiceFactory(APIView):
         except:
             user = User(name=spotify_data.get('display_name'), spotify_id=spotify_data.get('id'))
             user.save()
+
+        try:
+            # since the user got a new token from Spotify, we gotta rid our tracking of the old one
+            stored_token = Token.objects.get(user=user)
+            stored_token.delete()
+        except:
+            pass
+
+        stored_token = Token.objects.create(key=access_token, user=user)
+        stored_token.created = datetime.utcnow()
+        stored_token.save()
 
         return Response(
             {

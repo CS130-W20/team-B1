@@ -9,16 +9,16 @@
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from django.urls import re_path
-from channels.auth import AuthMiddlewareStack
 
 from .app.consumers import PartyConsumer
+from .app.consumers.authentication import TokenAuthMiddleware
 
 websocket_urlpatterns = [
     re_path(r'ws/party/$', PartyConsumer),
 ]
 
 application = ProtocolTypeRouter({
-    "websocket": AuthMiddlewareStack(
+    "websocket": TokenAuthMiddleware(
             URLRouter(
                 websocket_urlpatterns
             )

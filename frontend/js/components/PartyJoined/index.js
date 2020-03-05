@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-// import 'bootstrap/dist/css/bootstrap.css';
-// import '../css/MainScreen.css';
 import { Button } from 'reactstrap';
 import { Navbar, Nav, Form, FormControl } from 'react-bootstrap'  
 import WebSocketAsPromised from 'websocket-as-promised';
+import SpotifyWebPlayer, { STATUS } from 'react-spotify-web-playback';
+
+import '../css/SpotifyPlayer.css';
 
 class PartyJoined extends Component {
 	constructor(props) {
@@ -22,7 +23,7 @@ class PartyJoined extends Component {
 
 	componentDidMount() {
 		this.socket.onMessage.addListener(data => this.handleSocketMessage(data));
-		this.socket.open()
+		this.socket.open({'command': 'yo'})
 			.catch(error => {
 				this.setState({error: error});
 			});
@@ -46,7 +47,15 @@ class PartyJoined extends Component {
 
 				}
 		}
-}
+	}
+
+	handleCallback({ status, errorType }) {
+		if (status === STATUS.ERROR && errorType === 'authentication_error') {
+			localStorage.removeItem('token');
+			// TODO: update token
+			setToken('');
+		}
+	}
 
 	render() {
   	return (
@@ -80,6 +89,19 @@ class PartyJoined extends Component {
 						</a>
 					</div>
 				</div>
+				<SpotifyWebPlayer
+					autoPlay
+					callback={this.handleCallback}
+					persistDeviceSelection
+					play={false}
+					magnifySliderOnHover
+					showSaveIcon
+					token={localStorage.getItem('token')}
+					styles={{
+						sliderColor: '#1cb954',
+					}}
+					uris={['spotify:track:15qYihuKGFtQPnjsUX3CQO', 'spotify:track:1CWSbYQIA0XW4AQXvR4OLf',]}
+				/>
 			</div>
 		);
 	}

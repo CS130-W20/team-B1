@@ -2,6 +2,7 @@
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from rest_framework import status
+from django.contrib.auth.models import AnonymousUser
 
 import json
 
@@ -9,51 +10,41 @@ from .model_interactions.handlers import join_party, leave_party
 
 class PartyConsumer(AsyncWebsocketConsumer):
     #------------------------------------------------------------------
+    # Basic State
+    #------------------------------------------------------------------
+    user = None
+    party = None
+    
+    #------------------------------------------------------------------
     # Web Socket Communicators
     #------------------------------------------------------------------
     async def connect(self):
         """
-        Called when first connecting to the socket. Checks if player can join a party as requested, and joins them if they can.
+        Called when first connecting to the socket. You can connect freely, but it doesn't really do anything till you request a join.
         """
-        self.party_code = self.scope['party_code']
-
-        successful, reason, user = await join_party(self.scope['user'], self.party_code)
-
-        if not successful:
+        if self.scope['user'] != AnonymousUser():
+            # TODO: create party
+            await self.accept(subprotocol='Token')
+        else:
             await self.accept()
-            await self._send_response(
-                {
-                    'error': reason
-                }, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            await self.close()
-            return
-
-        self.user = user
-
-        # Join match's channel group
-        await self.channel_layer.group_add(
-            self.party_code,
-            self.channel_name
-        )
-
-        await self.accept()
 
     async def disconnect(self, close_code):
         """
         Ensures proper cleanup upon leaving.
         """
         if self.user is None:
-            # Do nothing if we early-aborted for an invalid join
+            # Do nothing if we haven't joined
+            await self.close()
             return
 
-        await leave_party(self.user.id, self.party_code)
+        await leave_party(self.user.id, self.party.host_code)
 
         await self.channel_layer.group_discard(
-            self.party_code,
+            self.party.host_code,
             self.channel_name
         )
+
+        await self.close()
 
     async def receive(self, text_data):
         """
@@ -86,6 +77,30 @@ class PartyConsumer(AsyncWebsocketConsumer):
     #------------------------------------------------------------------
     # Command Processors
     #------------------------------------------------------------------
+    async def _process_join_command(self, data):
+        party = data['party']
+        username = data['user']
+
+        successful, reason, user, party = await join_party(username, party)
+
+        if not successful:
+            await self._send_response(
+                {
+                    'error': reason
+                }, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            return
+
+        self.user = user
+        self.party = party
+
+        # Join party's channel group
+        await self.channel_layer.group_add(
+            self.party.host_code,
+            self.channel_name
+        )
+
     async def _process_chat_command(self, data):
         """
         Handle incoming chat-related commands.
@@ -141,10 +156,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
         if command_group in non_keyed_command_groups:
             return True
 
-        if not await self._command_valid(data, command_group):
-            return False
-
-        return True
+        return await self._command_valid(data, command_group)
 
     async def _command_valid(self, data, command_group):
         """
@@ -153,18 +165,29 @@ class PartyConsumer(AsyncWebsocketConsumer):
         switch = {
             'add_song': self.add_song_commands,
             'chat': self.chat_commands,
+            'join': self.join_commands,
         }
 
         commands = switch[command_group]
+        verified_group = False
         for command in commands:
             if command in data:
                 if command_group == 'chat':
+                    verified_group = True
                     if not isinstance(data[command], str):
                         await self._send_response({
                             'error': 'chat request must include key \'message\' valued to a string.'
                         }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
                         return False
+                elif command_group == 'join':
+                    verified_group = True
+                    if not isinstance(data[command], str):
+                        await self._send_response({
+                            'error': 'join request must include both key \'party\' and \'user\', both valued to a string.'
+                        }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+                        return False
                 elif command_group == 'add_song':
+                    verified_group = True
                     error_package = {
                         'error': 'add song request must include key \'song\' valued to a valid Spotify URI.'
                     }
@@ -177,13 +200,21 @@ class PartyConsumer(AsyncWebsocketConsumer):
                     if not contains_prefix:
                         await self._send_response(error_package, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
                         return False
-                return True
-                
+            elif command_group == 'join':
+                # if we are missing a join command, we must abort
+                await self._send_response({
+                    'error': 'join request must include both key \'party\' and \'user\', both valued to a string.'
+                }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+                return False
 
-        await self._send_response({
+        if not verified_group:
+            await self._send_response({
                 'error': '{} request must include key from {}.'.format(command_group, commands)
             }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
-        return False
+            return False
+        
+        return True
+                
 
     #------------------------------------------------------------------
     # Command Definitions
@@ -193,14 +224,16 @@ class PartyConsumer(AsyncWebsocketConsumer):
     # these are commands which can be called by the user within a command group, hence available in dispatch_command
     chat_commands = ['message']
     add_song_commands = ['song']
+    join_commands = ['party', 'user']
     # non-keyed command groups are ones which need no further info from the user other than the command itself
     non_keyed_command_groups = ['request_skip', 'veto']
-    command_groups = ['request_skip', 'chat', 'veto', 'add_song']
+    command_groups = ['request_skip', 'chat', 'veto', 'add_song', 'join']
     dispatch_command = {
         'veto': _process_veto_command,
         'request_skip': _process_request_skip_command,
         'add_song': _process_add_song_command,
         'chat': _process_chat_command,
+        'join': _process_join_command,
     }
 
     #------------------------------------------------------------------

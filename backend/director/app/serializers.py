@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from director.app.models import Song, SongRequest, User, Party
+from director.models import Song, SongRequest, User, Party
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):

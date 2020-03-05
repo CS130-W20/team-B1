@@ -17,11 +17,12 @@ class SpotifyLogin extends Component {
   }
 
 	handleLogin() {
-		loginWithSpotify().then(json => {
-			this.setState({oauthURL: json['location'], redirect: true})
-		});
+		loginWithSpotify()
+			.then(json => {
+				this.setState({oauthURL: json['location'], redirect: true})
+			});
 	}
-	
+
 	render () {
 		if (this.state.redirect) {
 			return <Route path='/login' component={() => { 
