@@ -48,6 +48,18 @@ def leave_party(user_id, party):
     party.save()
 
 @database_sync_to_async
+def create_party(user, party_name):
+    """
+    Has user create party named party_name.
+
+    :param User user: the party host.
+    :param str party_name: the name of the party.
+    :rtype: Party
+    :return: The party object if successful. None otherwise.
+    """
+    return Party.objects.createParty(user, party_name)
+
+@database_sync_to_async
 def execute_veto(user, party):
     """
     Attempts to have user veto the current song in the party.

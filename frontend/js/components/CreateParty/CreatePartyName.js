@@ -1,26 +1,62 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Button } from 'reactstrap';
+import { Form } from 'react-bootstrap';
 
-const CreatePartyName = (props) => {
-	console.log(localStorage.getItem('token')) // TODO: delete
-  return (
-  	<div className="CreatePartyName">
-  	  <div class="title">
-	    	<h1>Name your party, {props.user.name}!</h1>
-  		</div>
+class CreatePartyName extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			partyName: '',
+		}
+	}
 
-  		<div class="enterName">
-	    	<input type="text"  value= "Party Name"/>
-  		</div>
+	handleFormChange(e) {
+    const name = e.target.name;
+    const value = e.target.value;
+    this.setState(prevstate => {
+      const newState = { ...prevstate };
+      newState[name] = value;
+      return newState;
+		});
+	}
 
-    	<div className="buttons">
-	    	<Button className="button" color="success" > Launch Party!
-	    		<small> Lets get rockin' </small>
-	    	</Button>
-  		</div>
-  	</div>
+	handleFormSubmit(event) {
+		if(event.key === 'Enter') {
+			this.props.handlePartyCreate(this.state.partyName);
+		} 
+		event.preventDefault();
+	}
 
-  );
-}
+	render() {
+		return (
+			<div className="CreatePartyName">
+				<div className="title">
+					<h1>Name your party, {this.props.user.name}!</h1>
+				</div>
+
+				<Form onSubmit={this.handleFormSubmit}>
+					<Form.Group controlId="partyName" className="enterName">
+						<Form.Control 
+							name="partyName" 
+							placeholder={`${this.props.user.name}\'s Party`} 
+							onChange={this.handleFormChange.bind(this)} 
+						/>
+					</Form.Group>
+				</Form>
+
+				<div className="buttons">
+					<Button 
+						className="button" 
+						color="success" 
+						onClick={() => this.props.handlePartyCreate(this.state.partyName)} 
+					> 
+						Launch Party!
+						<small> Lets get rockin' </small>
+					</Button>
+				</div>
+			</div>
+		);
+	}
+};
 
 export default CreatePartyName;

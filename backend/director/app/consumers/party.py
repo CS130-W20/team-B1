@@ -6,7 +6,7 @@ from django.contrib.auth.models import AnonymousUser
 
 import json
 
-from .model_interactions.handlers import join_party, leave_party
+from .model_interactions.handlers import join_party, leave_party, create_party
 
 class PartyConsumer(AsyncWebsocketConsumer):
     #------------------------------------------------------------------
@@ -14,6 +14,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
     #------------------------------------------------------------------
     user = None
     party = None
+    authenticated = False
     
     #------------------------------------------------------------------
     # Web Socket Communicators
@@ -23,7 +24,8 @@ class PartyConsumer(AsyncWebsocketConsumer):
         Called when first connecting to the socket. You can connect freely, but it doesn't really do anything till you request a join.
         """
         if self.scope['user'] != AnonymousUser():
-            # TODO: create party
+            self.user = self.scope['user']
+            self.authenticated = True
             await self.accept(subprotocol='Token')
         else:
             await self.accept()
@@ -37,12 +39,13 @@ class PartyConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        await leave_party(self.user.id, self.party.host_code)
+        if self.party is not None:
+            await leave_party(self.user.id, self.party.host_code)
 
-        await self.channel_layer.group_discard(
-            self.party.host_code,
-            self.channel_name
-        )
+            await self.channel_layer.group_discard(
+                self.party.host_code,
+                self.channel_name
+            )
 
         await self.close()
 
@@ -78,6 +81,15 @@ class PartyConsumer(AsyncWebsocketConsumer):
     # Command Processors
     #------------------------------------------------------------------
     async def _process_join_command(self, data):
+        if self.user is not None:
+            await self._send_response(
+                {
+                    'error': 'user already part of a party, cannot join another'
+                }, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            return
+
         party = data['party']
         username = data['user']
 
@@ -93,6 +105,28 @@ class PartyConsumer(AsyncWebsocketConsumer):
             return
 
         self.user = user
+        self.party = party
+
+        # Join party's channel group
+        await self.channel_layer.group_add(
+            self.party.host_code,
+            self.channel_name
+        )
+
+    async def _process_create_command(self, data):
+        if not self.authenticated:
+            await self._send_response(
+                {
+                    'error': 'not identified as a Spotify Premium member. Cannot create a party.'
+                }, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+            return
+
+        party_name = data['name']
+
+        party = await create_party(self.user, party_name)
+
         self.party = party
 
         # Join party's channel group
@@ -186,6 +220,13 @@ class PartyConsumer(AsyncWebsocketConsumer):
                             'error': 'join request must include both key \'party\' and \'user\', both valued to a string.'
                         }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
                         return False
+                elif command_group == 'create':
+                    verified_group = True
+                    if not isinstance(data[command], str):
+                        await self._send_response({
+                            'error': 'create request must include key \'name\' valued to a string.'
+                        }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+                        return False
                 elif command_group == 'add_song':
                     verified_group = True
                     error_package = {
@@ -225,15 +266,17 @@ class PartyConsumer(AsyncWebsocketConsumer):
     chat_commands = ['message']
     add_song_commands = ['song']
     join_commands = ['party', 'user']
+    create_commands = ['name']
     # non-keyed command groups are ones which need no further info from the user other than the command itself
     non_keyed_command_groups = ['request_skip', 'veto']
-    command_groups = ['request_skip', 'chat', 'veto', 'add_song', 'join']
+    command_groups = ['request_skip', 'chat', 'veto', 'add_song', 'join', 'create']
     dispatch_command = {
         'veto': _process_veto_command,
         'request_skip': _process_request_skip_command,
         'add_song': _process_add_song_command,
         'chat': _process_chat_command,
         'join': _process_join_command,
+        'create': _process_create_command,
     }
 
     #------------------------------------------------------------------

@@ -4,6 +4,7 @@ import WebSocketAsPromised from 'websocket-as-promised';
 import JoinPartyName from '../../components/JoinParty';
 import {CreatePartyName} from '../../components/CreateParty';
 import ErrorMessage from '../../components/ErrorMessage';
+import Loading from '../../components/Loading';
 
 class PartyWrapper extends Component {
 	constructor(props) {
@@ -21,7 +22,7 @@ class PartyWrapper extends Component {
 		this.state = {
 			abort: shouldAbort,
 			renderingHost: renderingHost,
-			user: this.props.location.state.user,
+			user: shouldAbort ? null : this.props.location.state.user,
 		}
 	}
 
@@ -59,11 +60,14 @@ class PartyWrapper extends Component {
 	}
 
 	handlePartyCreate(partyName) {
-
+		console.log(`Got ${partyName} as the chosen party name!`)
 	}
 
 	render() {
-		if (this.state.error) {
+		if (this.state.abort) {
+			return <Loading />;
+		}
+		else if (this.state.error) {
 			return(
 				<ErrorMessage 
 					header={'Could not establish connection to Director!'}
