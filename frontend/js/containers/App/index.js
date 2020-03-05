@@ -17,8 +17,7 @@ const App = () => (
 			<Route exact path="/" component={MainScreen} />
 			<Route exact path="/host" component={CreatePartyName} />
 			<Route exact path="/login" component={SpotifyLogin} />
-			<Route exact path="/name" component={JoinPartyName} />
-			<Route exact path="/join" component={JoinPartyList} />
+			<Route exact path="/join" component={JoinPartyName} />
 			<Route exact path="/party" component={PartyJoined} /> {/* TODO: need to make URL tied to paty id/name */}
 			<Route exact path="/callback" component={OAuthCallback} /> {/* TODO: need to make this restricted */}
 		</Switch>

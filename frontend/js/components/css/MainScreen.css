@@ -109,6 +109,18 @@ body {
 	padding: 20px 2px;
 }
 
+.enterCode {
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+.enterCode input {
+	width: 100%;
+	border-radius: 10px;
+	padding: 20px 2px;
+}
+
+
 /* Party Joined stuff */
 .listQueue {
 	padding: 20px 5px;
