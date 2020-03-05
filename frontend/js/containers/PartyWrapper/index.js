@@ -60,7 +60,10 @@ class PartyWrapper extends Component {
 	}
 
 	handlePartyCreate(partyName) {
-		console.log(`Got ${partyName} as the chosen party name!`)
+		this.socket.sendRequest({
+			'command': 'create',
+			'name': partyName
+		});
 	}
 
 	render() {
@@ -81,7 +84,7 @@ class PartyWrapper extends Component {
 			return (
 				<CreatePartyName
 					user={this.state.user}
-					handlePartyCreate={this.handlePartyCreate}
+					handlePartyCreate={this.handlePartyCreate.bind(this)}
 				/>
 			);
 		}

@@ -39,6 +39,8 @@ class PartyConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
+        # TODO: delete party and boot users if host leaves
+
         if self.party is not None:
             await leave_party(self.user.id, self.party.host_code)
 
@@ -123,6 +125,15 @@ class PartyConsumer(AsyncWebsocketConsumer):
             )
             return
 
+        if self.party:
+            await self._send_response(
+                {
+                    'error': 'party already exists, cannot create another'
+                }, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            return
+
         party_name = data['name']
 
         party = await create_party(self.user, party_name)
@@ -134,6 +145,14 @@ class PartyConsumer(AsyncWebsocketConsumer):
             self.party.host_code,
             self.channel_name
         )
+
+        await self._send_response(
+            {
+                'party_code': self.party.host_code,
+            },
+            status=status.HTTP_200_OK
+            )
+        return
 
     async def _process_chat_command(self, data):
         """
@@ -187,7 +206,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
             }, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
             return False
 
-        if command_group in non_keyed_command_groups:
+        if command_group in self.non_keyed_command_groups:
             return True
 
         return await self._command_valid(data, command_group)
@@ -200,6 +219,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
             'add_song': self.add_song_commands,
             'chat': self.chat_commands,
             'join': self.join_commands,
+            'create': self.create_commands,
         }
 
         commands = switch[command_group]
