@@ -112,7 +112,7 @@ class PartyWrapper extends Component {
 				<ErrorMessage 
 					header={'There was an error connecting to Director!'}
 					headerSize={'2em'}
-					message={`${this.state.error}\nPlease try refreshing the page.`}
+					message={`${this.state.abortiveError}\nPlease try refreshing the page.`}
 					messageSize={'1em'}
 				/>
 			);
