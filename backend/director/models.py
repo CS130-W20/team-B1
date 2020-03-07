@@ -55,7 +55,7 @@ class User(AbstractBaseUser):
     # django assigns a primary key id by default
     name = models.CharField(max_length=50, unique=True)
     join_time = models.DateTimeField(auto_now_add=True)
-    spotify_id = models.TextField(unique=True)
+    spotify_id = models.TextField(unique=True, null=True)
 
     # get rid of unnecessary fields inherited
     password = None

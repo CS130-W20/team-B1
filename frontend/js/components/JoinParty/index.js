@@ -1,30 +1,80 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Button } from 'reactstrap';
+import { Form } from 'react-bootstrap';
 
+class JoinPartyName extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			partyCode: '',
+			username: '',
+			buttonPushed: false,
+		}
+	}
 
-const JoinPartyName = () => {
-  return (
-  	<div className="JoinPartyName">
-			<div class="title">
-				<h1>Almost Party Time!</h1>
-			</div>
+	componentDidUpdate() {
+		if (this.props.error && this.state.buttonPushed) {
+			this.setState({buttonPushed: false});
+		}
+	}
 
-			<div class="enterName">
-				<input type="text"  value= "Name"/>
-			</div>
+	handleFormChange(e) {
+    const name = e.target.name;
+    const value = e.target.value;
+    this.setState(prevstate => {
+      const newState = { ...prevstate };
+      newState[name] = value;
+      return newState;
+		});
+	}
 
-			<div class="enterCode">
-				<input type="text"  value= "Party Code"/>
-			</div>
+	handleFormSubmit(event) {
+		if(event.key === 'Enter') {
+			this.props.handlePartyJoin(this.state.partyCode);
+		} 
+		event.preventDefault();
+	}
 
-			<div className="buttons">
-				<Button className="button" color="success"> Join party
-					<small>Let's get rockin'</small>
-				</Button>
-			</div>
-  	</div>
+	render() {
+		return (
+			<div className="JoinPartyName">
+				<div className="title">
+					<h1>Almost Party Time!</h1>
+				</div>
 
-  );
-}
+				<Form onSubmit={this.handleFormSubmit}>
+					<Form.Group controlId="username" className="enterName">
+						<Form.Control 
+							name="username" 
+							placeholder={'username'} 
+							onChange={this.handleFormChange.bind(this)} 
+						/>
+					</Form.Group>
+					<Form.Group controlId="partyCode" className="enterCode">
+						<Form.Control 
+							name="partyCode" 
+							placeholder={'Party Code'} 
+							onChange={this.handleFormChange.bind(this)} 
+						/>
+					</Form.Group>
+				</Form>
+
+				{this.props.error ? <small className="error">{this.props.error}</small> : null}
+
+				<div className="buttons">
+					<Button 
+						className="button" 
+						color="success"
+						onClick={() => {this.setState({buttonPushed: true}); this.props.handlePartyJoin(this.state.partyCode, this.state.username)}} 
+						disabled={this.state.buttonPushed}
+					> 
+						Join party
+						<small>Let's get rockin'</small>
+					</Button>
+				</div>
+  		</div>
+		);
+	}
+};
 
 export default JoinPartyName;

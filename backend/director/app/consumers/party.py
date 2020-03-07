@@ -42,7 +42,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
         # TODO: delete party and boot users if host leaves
 
         if self.party is not None:
-            await leave_party(self.user.id, self.party.host_code)
+            await leave_party(self.user.id, self.party)
 
             await self.channel_layer.group_discard(
                 self.party.host_code,
@@ -115,6 +115,17 @@ class PartyConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        await self._send_response(
+            {
+                'command': 'party',
+                'party_code': self.party.host_code,
+                'party_name': self.party.name
+            },
+            status=status.HTTP_200_OK
+        )
+
+        return
+
     async def _process_create_command(self, data):
         if not self.authenticated:
             await self._send_response(
@@ -148,7 +159,9 @@ class PartyConsumer(AsyncWebsocketConsumer):
 
         await self._send_response(
             {
+                'command': 'party',
                 'party_code': self.party.host_code,
+                'party_name': self.party.name
             },
             status=status.HTTP_200_OK
             )

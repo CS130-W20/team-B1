@@ -24,7 +24,7 @@ def join_party(username, party_code):
     parties_matching_code = Party.objects.findPartyByCode(party_code)
 
     if len(parties_matching_code) < 1:
-        return False, 'Party {} does not exist!'.format(party_code), None, None
+        return False, 'There is no party with code {}. Please try another code.'.format(party_code), None, None
     elif len(parties_matching_code) > 1:
         error = 'There are {} parties with code {}. Only 1 should exist!'.format(len(parties_matching_code), party_code)
         raise ValidationError(error, code='invalid')

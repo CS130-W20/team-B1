@@ -7,6 +7,7 @@ class CreatePartyName extends Component {
 		super(props);
 		this.state = {
 			partyName: '',
+			buttonPushed: false,
 		}
 	}
 
@@ -48,7 +49,8 @@ class CreatePartyName extends Component {
 					<Button 
 						className="button" 
 						color="success" 
-						onClick={() => this.props.handlePartyCreate(this.state.partyName)} 
+						onClick={() => {this.setState({buttonPushed: true}); this.props.handlePartyCreate(this.state.partyName)}} 
+						disabled={this.state.buttonPushed}
 					> 
 						Launch Party!
 						<small> Lets get rockin' </small>

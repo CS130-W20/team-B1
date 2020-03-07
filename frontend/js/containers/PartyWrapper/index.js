@@ -5,11 +5,13 @@ import JoinPartyName from '../../components/JoinParty';
 import {CreatePartyName} from '../../components/CreateParty';
 import ErrorMessage from '../../components/ErrorMessage';
 import Loading from '../../components/Loading';
+import PartyJoined from '../../components/PartyJoined';
 
 class PartyWrapper extends Component {
 	constructor(props) {
 		super(props);
 		const renderingHost = this.props.location.pathname == '/host';
+		const renderingJoin = this.props.location.pathname == '/join';
 		const shouldAbort = this.props.location.pathname == '/host' && (!this.props.location.state || !this.props.location.state.prevRoute || this.props.location.state.prevRoute != 'OAuthCallback');
 		this.socket = new WebSocketAsPromised('ws://localhost:8000/ws/party/', {
 			createWebSocket: url => renderingHost ? new WebSocket(url, ['Token', localStorage.getItem('token')]) : new WebSocket(url),
@@ -22,7 +24,13 @@ class PartyWrapper extends Component {
 		this.state = {
 			abort: shouldAbort,
 			renderingHost: renderingHost,
-			user: shouldAbort ? null : this.props.location.state.user,
+			user: shouldAbort || renderingJoin ? null : this.props.location.state.user,
+			partyCode: null,
+			partyName: null,
+			partyBegun: false,
+			songList: [],
+			abortiveError: null,
+			error: null,
 		}
 	}
 
@@ -30,11 +38,17 @@ class PartyWrapper extends Component {
 		if (this.state.abort) {
       this.props.history.push('/login');
 		}
-		else {
+		else if(this.state.renderingHost) {
 			this.socket.open()
 				.then(this.setState({user: this.props.location.state.user}))
 				.catch(error => {
-					this.setState({error: error});
+					this.setState({abortiveError: error});
+				});
+		}
+		else {
+			this.socket.open()
+				.catch(error => {
+					this.setState({abortiveError: error});
 				});
 		}
 	}
@@ -47,15 +61,27 @@ class PartyWrapper extends Component {
 				console.log(error);
 			});
 	}
-
+ 
 	handleSocketMessage(data) {
 		const json = JSON.parse(data)
 		const command = json.command;
-		switch (command) {
-			case 'channel':
-				if (json.hasOwnProperty('TODO: some property')) {
+		if (json.error) {
+			this.setState({error: json.error});
+		}
+		else {
+			switch (command) {
+				case 'channel':
+					if (json.hasOwnProperty('TODO: some property')) {
 
-				}
+					}
+					break;
+				case 'party':
+					if (json.hasOwnProperty('party_code')) {
+						this.setState({partyCode: json.party_code, partyName: json.party_name, partyBegun: true});
+						window.history.replaceState(null, null, '/party'); // allows us to change the URL w/o re-rendering
+					}
+					break
+			}
 		}
 	}
 
@@ -63,20 +89,41 @@ class PartyWrapper extends Component {
 		this.socket.sendRequest({
 			'command': 'create',
 			'name': partyName
-		});
+		})
+		.catch(error => this.setState({abortiveError: error})); // todo: more robust?
+	}
+
+	handlePartyJoin(partyCode, username) {
+		this.setState({user: {name: username}})
+		this.socket.sendRequest({
+			'command': 'join',
+			'user': username,
+			'party': partyCode
+		})
+		.catch(error => this.setState({abortiveError: error})); // TODO: more robust?
 	}
 
 	render() {
 		if (this.state.abort) {
 			return <Loading />;
 		}
-		else if (this.state.error) {
+		else if (this.state.abortiveError) {
 			return(
 				<ErrorMessage 
-					header={'Could not establish connection to Director!'}
+					header={'There was an error connecting to Director!'}
 					headerSize={'2em'}
 					message={`${this.state.error}\nPlease try refreshing the page.`}
 					messageSize={'1em'}
+				/>
+			);
+		}
+		else if (this.state.partyBegun) {
+			return (
+				<PartyJoined 
+					partyCode={this.state.partyCode}
+					partyName={this.state.partyName}
+					songList={this.state.songList}
+					hosting={this.state.renderingHost}
 				/>
 			);
 		}
@@ -85,12 +132,16 @@ class PartyWrapper extends Component {
 				<CreatePartyName
 					user={this.state.user}
 					handlePartyCreate={this.handlePartyCreate.bind(this)}
+					error={this.state.error}
 				/>
 			);
 		}
 		else {
 			return (
-				<JoinPartyName />
+				<JoinPartyName
+					handlePartyJoin={this.handlePartyJoin.bind(this)}
+					error={this.state.error}
+				/>
 			);
 		}
 	}
