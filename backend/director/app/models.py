@@ -111,9 +111,16 @@ class Party(models.Model):
         return ret
     
     def requestSkip(self, user, song_request):
-        ret = song_request.skip_requests.add(user)
-        # TODO: check if skip threshold is met
-        return ret
+        song_request.skip_requests.add(user)
+
+        # check if skip threshold is met
+        num_skips = song_request.get_num_skip_requests()
+        num_guests = len(self.guests.all())
+        if num_skips/num_guests > self.skipPercentageThreshold:
+            self.queue.removeSong(song_request)
+            return True
+        
+        return False
     
     def vetoSong(self, host, song_request):
         if host == self.host:
