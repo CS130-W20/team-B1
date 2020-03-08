@@ -67,6 +67,7 @@ class MusicService(APIView):
     def get(self, request, format='json'):
         """
         :method: GET
+        :param str token: a valid Spotify API token.
         :param str query: a valid search query constructed via URL notation to apply to Spotify's backend.
         :rtype: json
         :return:
@@ -88,6 +89,7 @@ class MusicService(APIView):
             song_result['album_art'] = song['album']['images'][1]['url']
             song_result['song_name'] = song['name']
             song_result['uri'] = song['uri']
+            song_result['url'] = song['external_urls']['spotify']
             parsed_result.append(song_result)
 
         return {'songs': parsed_result}
