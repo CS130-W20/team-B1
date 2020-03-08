@@ -1,3 +1,4 @@
+/*
 import React from 'react';
 import renderer from 'react-test-renderer';
 
@@ -9,3 +10,4 @@ describe ('Testing Create Party Name Page', () => {
         expect(wrapper).toMatchSnapshot();
     });
 });
+*/

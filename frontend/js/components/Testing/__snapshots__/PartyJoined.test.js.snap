@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing Spotify Login Page correctly renders 1`] = `
+<div
+  className="PartyJoined"
+>
+  <div
+    class="searchDiv"
+  >
+    <form
+      class="searchBar"
+      className=""
+    >
+      <input
+        className="mr-sm-2 form-control"
+        placeholder="Search"
+        type="text"
+      />
+    </form>
+  </div>
+  <div
+    class="title"
+  >
+    <h1>
+      Song Queue 
+    </h1>
+  </div>
+  <div
+    className="listViewSongQueue"
+  >
+    <div
+      class="list-group"
+    >
+      <a
+        class="list-group-item list-group-item-action listQueue"
+        href="#"
+      >
+        <div
+          class="column left"
+        >
+          <img
+            alt="W3Schools.com"
+            class="albumArtwork"
+            src="https://www.w3schools.com/images/w3schools_green.jpg"
+          />
+        </div>
+        <div
+          class="column middle"
+        >
+          Name of Song
+        </div>
+        <div
+          class="column right buttonCard"
+        >
+          <button
+            aria-label={null}
+            className="SkipButton btn btn-danger"
+            onClick={[Function]}
+          >
+            Skip
+          </button>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+`;
