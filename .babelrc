@@ -1,0 +1,7 @@
+{
+    "presets": ["@babel/env", "@babel/preset-react"]
+}
+
+
+// https://stackoverflow.com/questions/56952728/jest-tests-on-react-components-unexpected-token
+
