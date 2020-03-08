@@ -12,3 +12,11 @@
 ._ControlsRSWP.__1g1kf0v {
     z-index: 1;
 }
+
+._PlayerRSWP button {
+    visibility: hidden;
+}
+
+.__1g1kf0v button.rswp__toggle {
+    visibility: visible;
+}
