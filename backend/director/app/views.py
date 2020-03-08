@@ -20,8 +20,8 @@ from drf_yasg import openapi
 from spotipy import Spotify
 from ..SpotipyRest.oauth2 import SpotifyOAuthRest
 
-from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer
-from ..models import Song, SongRequest, User, Party, Token
+from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer, PartyQueueSerializer
+from ..models import Song, SongRequest, User, Party, Token, PartyQueue
 
 spotify_oauth = SpotifyOAuthRest(
     django_settings.SPOTIPY_CLIENT_ID, 
@@ -59,6 +59,13 @@ class PartyViewSet(viewsets.ModelViewSet):
     """
     queryset = Party.objects.all()
     serializer_class = PartySerializer
+
+class PartyQueueViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows party queues to be viewed or edited.
+    """
+    queryset = PartyQueue.objects.all()
+    serializer_class = PartyQueueSerializer
 
 class MusicService(APIView):
     """

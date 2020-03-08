@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from director.models import Song, SongRequest, User, Party
+from director.models import Song, SongRequest, User, Party, PartyQueue
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -20,4 +20,9 @@ class SongRequestSerializer(serializers.HyperlinkedModelSerializer):
 class PartySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Party
+        fields = '__all__'
+
+class PartyQueueSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = PartyQueue
         fields = '__all__'
