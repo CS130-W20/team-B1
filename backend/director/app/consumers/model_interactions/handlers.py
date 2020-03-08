@@ -6,6 +6,7 @@ from channels.db import database_sync_to_async
 from rest_framework.serializers import ValidationError
 
 from ....models import Party, Song
+from ...serializers import SongRequestSerializer, SongSerializer
 
 @database_sync_to_async
 def join_party(username, party_code):
@@ -88,3 +89,9 @@ def execute_veto(user, party):
     Attempts to have user veto the current song in the party.
     """
     return False # todo: stub
+
+@database_sync_to_async
+def get_queue(party):
+    party_queue_list = list(party.getQueue())
+    song_list = [SongSerializer(sr.song).data for sr in party_queue_list]
+    return song_list

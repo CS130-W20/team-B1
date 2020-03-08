@@ -6,7 +6,7 @@ from django.contrib.auth.models import AnonymousUser
 
 import json
 
-from .model_interactions.handlers import join_party, leave_party, create_party, add_song_to_queue
+from .model_interactions.handlers import join_party, leave_party, create_party, add_song_to_queue, get_queue
 
 class PartyConsumer(AsyncWebsocketConsumer):
     #------------------------------------------------------------------
@@ -116,7 +116,8 @@ class PartyConsumer(AsyncWebsocketConsumer):
                 {
                     'error': 'user already part of a party, cannot join another'
                 }, 
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
+                id=data['id']
             )
             return
 
@@ -130,7 +131,8 @@ class PartyConsumer(AsyncWebsocketConsumer):
                 {
                     'error': reason
                 }, 
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
+                id=data['id']
             )
             return
 
@@ -147,9 +149,11 @@ class PartyConsumer(AsyncWebsocketConsumer):
             {
                 'command': 'party',
                 'party_code': self.party.host_code,
-                'party_name': self.party.name
+                'party_name': self.party.name,
+                'queue': await get_queue(self.party)
             },
-            status=status.HTTP_200_OK
+            status=status.HTTP_200_OK,
+            id=data['id']
         )
 
         return

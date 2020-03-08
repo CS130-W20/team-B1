@@ -46,8 +46,8 @@ class PartyJoined extends Component {
 		console.log(`this.state.position: ${this.state.position}`);
 		console.log(this.props.songList)
 		console.log(`~~~~~~~~~`)
-		if (newTrackLength > this.state.songOffset || (newTrackLength == this.state.songOffset - 2)) {
-			this.setState({songOffset: newTrackLength});
+		if (newTrackLength > this.state.songOffset) { // we disallow backtracking in the queue now || (newTrackLength == this.state.songOffset - 2)) {
+			this.setState({songOffset: newTrackLength}); // TODO: update queue state
 		}
 	}
 
@@ -60,24 +60,6 @@ class PartyJoined extends Component {
 		this.props.handleSongAdd(data);
 	}
 	
-	renderQueueItems(props) {
-  		return (
-  			<div className="list-group">
-				<a href="#" className="list-group-item list-group-item-action listQueue">
-					<div className="column left">
-						<img className="albumArtwork" src={this.props.queue.albumArtwork} alt="cover" />
-					</div>
-
-					<div className="column middle">src={this.props.queue.songName} </div>
-
-					<div className="column right buttonCard">
-						<Button className="SkipButton" color="danger" onclick="skipSong()"> Skip </Button>
-					</div>
-				</a>
-			</div>
-  		);
-	}
-
 	render() {
 		console.log(`songList: ${this.props.songList}`)
   	return (
@@ -106,6 +88,25 @@ class PartyJoined extends Component {
 				</div>
 
 				{this.props.error ? <small className="error">{this.props.error}</small> : null}
+
+				<div className="queueResults">
+					<div className="list-group">
+						{this.props.queue.map((result, index) => (
+							<div key={index} className="list-group-item list-group-item-action queueResult">
+								<a href={result.url} target="_blank">
+									<div className="column left">
+										<img className="albumArtwork" src={result.album_art} alt={`${result.song_name} Album Art`} />
+									</div>
+									<div className="column middle songTitle">{result.song_name}</div>
+									<div className="column middle songArtist">{result.artist_name}</div>
+								</a>
+								<div className="column right buttonCard">
+									<Button className="AddButton" color="danger" onClick={() => this.props.handleSongSkip(result)}>Skip</Button>
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
 
 				{
 					this.props.hosting ?

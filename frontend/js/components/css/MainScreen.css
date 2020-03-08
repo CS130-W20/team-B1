@@ -192,4 +192,29 @@ body {
   width: 50%;
 }
 
+.queueResults {
+    border-radius: 10px;
+    border: 1px solid lightgray;
+}
+
+.queueResults .list-group {
+    margin-top: 5px;
+    padding-bottom: 50px;
+}
+
+.queueResult {
+	padding: 20px 5px;
+    border-color: lightslategray;
+    background-color: whitesmoke!important;
+	border-radius: 10px;
+	background-color: #EBF0F7;
+	margin-bottom: 15px;
+    overflow: break-word;
+    width: 95%;
+    margin-left: 2.5%
+}
+
+.queueResult:hover {
+    background-color: lightgray!important;
+}
 

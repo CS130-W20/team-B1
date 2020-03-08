@@ -27,14 +27,16 @@ class PartyWrapper extends Component {
 		this.socket.onMessage.addListener(data => this.handleSocketMessage(data));
 		this.state = {
 			abort: shouldAbort,
-			renderingHost: renderingHost,
+			hosting: renderingHost,
 			user: shouldAbort || renderingJoin ? null : this.props.location.state.user,
 			partyCode: null,
 			partyName: null,
 			partyBegun: false,
-			songList: ['spotify:track:421leiR6jKlH5KDdwLYrOs', 'spotify:track:2b8fOow8UzyDFAE27YhOZM'],
+			songList: [],
+			queue: [],
 			abortiveError: null,
 			error: null,
+			partyRerouteDone: false,
 		}
 	}
 
@@ -42,7 +44,7 @@ class PartyWrapper extends Component {
 		if (this.state.abort) {
       this.props.history.push('/');
 		}
-		else if(this.state.renderingHost) {
+		else if(this.state.hosting) {
 			this.socket.open()
 				.then(this.setState({user: this.props.location.state.user}))
 				.catch(error => {
@@ -65,6 +67,16 @@ class PartyWrapper extends Component {
 				console.log(error);
 			});
 	}
+
+	componentDidUpdate() {
+		if (this.state.partyBegun && !this.state.partyRerouteDone) {
+			window.history.replaceState(null, null, '/party'); // allows us to change the URL w/o re-rendering
+		}
+	}
+
+	startParty() {
+		this.setState({partyBegun: true});
+	}
  
 	handleSocketMessage(data) {
 		const json = JSON.parse(data)
@@ -74,16 +86,20 @@ class PartyWrapper extends Component {
 		}
 		else {
 			switch (command) {
-				case 'channel':
-					if (json.hasOwnProperty('TODO: some property')) {
-
-					}
+				case 'vacate':
+					// TODO: handle vacated
 					break;
 				case 'party':
 					if (json.hasOwnProperty('party_code')) {
-						this.setState({partyCode: json.party_code, partyName: json.party_name, partyBegun: true});
-						window.history.replaceState(null, null, '/party'); // allows us to change the URL w/o re-rendering
+						this.setState({partyCode: json.party_code, partyName: json.party_name});
 					}
+					break
+				case 'song_added':
+					let song_data = json.song;
+					delete song_data.url;
+					delete song_data.command;
+					delete song_data.id;
+					this.setState({queue: [...this.state.queue, song_data], songList: [...this.state.songList, song_data.uri]})
 					break
 			}
 		}
@@ -98,11 +114,19 @@ class PartyWrapper extends Component {
 	}
 
 	handlePartyJoin(partyCode, username) {
-		this.setState({user: {name: username}})
 		this.socket.sendRequest({
 			'command': 'join',
 			'user': username,
 			'party': partyCode
+		})
+		.then(resp => {
+			if (resp.status >= 400) {
+				this.setState({error: resp.error});
+			}
+			else {
+				console.log(resp);
+				this.setState({user: {name: username}, partyBegun: true, queue: resp.queue});
+			}
 		})
 		.catch(error => this.setState({error: error})); // TODO: more robust?
 	}
@@ -114,11 +138,8 @@ class PartyWrapper extends Component {
 			.then(resp => {
 				console.log("I'm here!")
 				if (resp.status > 400) {
+					console.log(error)
 					this.setState({error: resp.message});
-				}
-				else {
-					console.log("setting songList")
-					this.setState({songList: [...this.state.songList, data['uri'],]});
 				}
 			})
 			.catch(error => this.setState({abortiveError: error.message}));
@@ -144,17 +165,19 @@ class PartyWrapper extends Component {
 					partyCode={this.state.partyCode}
 					partyName={this.state.partyName}
 					songList={this.state.songList}
-					hosting={this.state.renderingHost}
+					hosting={this.state.hosting}
 					handleSongAdd={this.handleSongAdd.bind(this)}
-					error={this.state.error}
+					queue={this.state.queue}
 				/>
 			);
 		}
-  	else if (this.state.renderingHost) {
+  	else if (this.state.hosting) {
 			return (
 				<CreatePartyName
 					user={this.state.user}
 					handlePartyCreate={this.handlePartyCreate.bind(this)}
+					handleSongAdd={this.handleSongAdd.bind(this)}
+					handlePartyStart={this.startParty.bind(this)}
 					error={this.state.error}
 				/>
 			);

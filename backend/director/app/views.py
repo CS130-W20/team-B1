@@ -19,6 +19,7 @@ from drf_yasg import openapi
 
 from spotipy import Spotify
 from spotipy.client import SpotifyException
+from spotipy.oauth2 import SpotifyClientCredentials
 from ..SpotipyRest.oauth2 import SpotifyOAuthRest
 
 from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer, PartyQueueSerializer
@@ -84,7 +85,10 @@ class MusicService(APIView):
         """
         self._validate_get_request(request)
 
-        spotify = Spotify(request.data['token'])
+        if request.data.get('token'):
+            spotify = Spotify(request.data['token'])
+        else:
+            spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
 
         new_token = None
 
@@ -135,14 +139,6 @@ class MusicService(APIView):
         if not request.data.get('query'):
             raise ValidationError(
                 {'error': 'Search request must specify query string.'},
-                code='invalid')
-
-        if not request.data.get('token'):
-            raise ValidationError(
-                {
-                    'error':
-                    'Search request must specify valid Spotify API token.'
-                },
                 code='invalid')
 
 

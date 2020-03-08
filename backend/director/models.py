@@ -48,11 +48,11 @@ class Song(models.Model):
     album_art = models.URLField(blank=True)
 
     def __str__(self):
-        return f"{self.name} by {self.artist} (id: {self.song_id})"
+        return f"{self.name} by {self.artist} (id: {self.uri})"
 
 class User(AbstractBaseUser):
     # django assigns a primary key id by default
-    name = models.CharField(max_length=50, unique=True)
+    name = models.TextField(unique=True)
     join_time = models.DateTimeField(auto_now_add=True)
     spotify_id = models.TextField(unique=True, null=True)
 
@@ -151,7 +151,15 @@ class Party(models.Model):
         return self.guests.all()
     
     def join(self, name):
-        user = User.objects.create(name=name)
+        try:
+            user = User.objects.get(name=name)
+            uniquifier = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+            while User.objects.filter(name='{}{}'.format(name, uniquifier)):
+                uniquifier = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+            user = User.objects.create(name='{}{}'.format(name, uniquifier))
+        except:
+            user = User.objects.create(name=name)
+
         self.guests.add(user)
         return user
 
