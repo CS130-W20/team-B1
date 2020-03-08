@@ -168,7 +168,10 @@ class Party(models.Model):
         """
         :raises: if user with user_id not in guest list.
         """
-        user = User.objects.get(id=user_id)
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return
         if user == self.host:
             # TODO: export history to playlist
             self.delete()
@@ -177,8 +180,8 @@ class Party(models.Model):
             guest.delete()
 
     def delete(self, using=None):
-        if self.guests:
-            list(map(lambda guest: guest.delete(), self.guests))
+        for guest in self.guests.all():
+            guest.delete()
         if self.queue:
             self.queue.delete()
         if self.host:

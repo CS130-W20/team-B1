@@ -45,8 +45,11 @@ def leave_party(user_id, party):
     :param Party party: the party object.
     :raises: if user_id does not belong to a user in party ID'd by party_code.
     """
-    party.leave(user_id)
-    party.save()
+    try:
+        party.leave(user_id)
+    except party.DoesNotExist:
+        return
+
 
 @database_sync_to_async
 def create_party(user, party_name):
