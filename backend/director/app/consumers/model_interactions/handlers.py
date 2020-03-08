@@ -103,3 +103,14 @@ def advance_queue(party):
     queue.offset += 1
     queue.save()
     return queue.offset
+
+@database_sync_to_async
+def song_at_skip_threshold(user, party):
+    party_queue_list = list(party.getQueue())
+    offset = party.queue.offset
+    song = party_queue_list[offset]
+    song.skip_requests.add(user)
+    song.save()
+    skip_requests = song.get_num_skip_requests()
+    skip_percentage = skip_requests / len(party.guests.all())
+    return skip_percentage >= party.skipPercentageThreshold

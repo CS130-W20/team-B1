@@ -13,7 +13,6 @@ class PartyJoined extends Component {
 		this.state = {
 			error: null,
 			showModal: false,
-			songOffset: 0,
 			position: 0,
 			autoPlay: true,
 		}
@@ -41,14 +40,13 @@ class PartyJoined extends Component {
 		console.log(previousTracks)
 		console.log(`newTrackLength: ${newTrackLength}`)
 		console.log(`latestPreviousTrack.uri: ${uri_to_match}`)
-		console.log(`this.state.songOffset: ${this.state.songOffset}`);
+		console.log(`this.props.songOffset: ${this.props.songOffset}`);
 		console.log(`position: ${position}`);
 		console.log(`this.state.position: ${this.state.position}`);
 		console.log(this.props.songList)
 		console.log(`~~~~~~~~~`)
-		if (newTrackLength > this.state.songOffset) { // we disallow backtracking in the queue now || (newTrackLength == this.state.songOffset - 2)) {
-			this.setState({songOffset: newTrackLength});
-			this.props.advanceQueue();
+		if (newTrackLength > this.props.songOffset) { // we disallow backtracking in the queue now || (newTrackLength == this.props.songOffset - 2)) {
+			this.props.advanceQueue(newTrackLength);
 		}
 	}
 
@@ -101,9 +99,13 @@ class PartyJoined extends Component {
 									<div className="column middle songTitle">{result.song_name}</div>
 									<div className="column middle songArtist">{result.artist_name}</div>
 								</a>
+								{index == 0 ?
 								<div className="column right buttonCard">
-									<Button className="AddButton" color="danger" onClick={() => this.props.handleSongSkip(result)}>Skip</Button>
+									<Button className="AddButton" color="danger" onClick={() => this.props.handleSongSkip(result)}>{this.props.hosting ? 'Skip' : 'Vote to Skip'}</Button>
 								</div>
+								:
+								null
+								}
 							</div>
 						))}
 					</div>
@@ -123,7 +125,7 @@ class PartyJoined extends Component {
 							sliderColor: '#1cb954',
 						}}
 						name={'Director Web Player'}
-						offset={this.state.songOffset}
+						offset={this.props.songOffset}
 						uris={this.props.songList}
 						position={this.state.position}
 					/>

@@ -33,6 +33,7 @@ class PartyWrapper extends Component {
 			partyName: null,
 			partyBegun: false,
 			songList: [],
+			songListOffset: 0,
 			queue: [],
 			abortiveError: null,
 			error: null,
@@ -69,7 +70,10 @@ class PartyWrapper extends Component {
 	}
 
 	componentDidUpdate() {
-		if (this.state.partyBegun && !this.state.partyRerouteDone) {
+		if (this.state.abort) {
+      this.props.history.push('/');
+		}
+		else if (this.state.partyBegun && !this.state.partyRerouteDone) {
 			window.history.replaceState(null, null, '/party'); // allows us to change the URL w/o re-rendering
 		}
 	}
@@ -87,7 +91,7 @@ class PartyWrapper extends Component {
 		else {
 			switch (command) {
 				case 'vacate':
-					// TODO: handle vacated
+					this.setState({abort: true});
 					break;
 				case 'party':
 					if (json.hasOwnProperty('party_code')) {
@@ -96,16 +100,12 @@ class PartyWrapper extends Component {
 					break
 				case 'song_added':
 					let song_data = json.song;
-					delete song_data.url;
 					delete song_data.command;
 					delete song_data.id;
 					this.setState({queue: [...this.state.queue, song_data], songList: [...this.state.songList, song_data.uri]})
 					break
 				case 'advance_queue':
-					if (this.state.hosting) {
-						return;
-					}
-					this.setState({queue: this.state.queue.slice(1)});
+					this.setState({queue: this.state.queue.slice(1), songListOffset: this.state.songListOffset + 1});
 					break
 			}
 		}
@@ -137,10 +137,10 @@ class PartyWrapper extends Component {
 		.catch(error => this.setState({error: error})); // TODO: more robust?
 	}
 	
-	advanceQueue() {
+	advanceQueue(newOffset) {
 		this.socket.sendRequest({
 			'command': 'advance_queue'
-		}).then(this.setState({queue: this.state.queue.slice(1)}));
+		});
 	}
 
 	handleSongAdd(data) {
@@ -155,6 +155,12 @@ class PartyWrapper extends Component {
 				}
 			})
 			.catch(error => this.setState({abortiveError: error.message}));
+	}
+
+	handleSongSkip(song) {
+		this.socket.sendRequest({
+			'command': 'request_skip'
+		});
 	}
 
 	render() {
@@ -181,6 +187,8 @@ class PartyWrapper extends Component {
 					handleSongAdd={this.handleSongAdd.bind(this)}
 					queue={this.state.queue}
 					advanceQueue={this.advanceQueue.bind(this)}
+					handleSongSkip={this.handleSongSkip.bind(this)}
+					songOffset={this.state.songListOffset}
 				/>
 			);
 		}
