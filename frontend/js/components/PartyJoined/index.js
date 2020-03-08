@@ -16,14 +16,6 @@ class PartyJoined extends Component {
 		}
 	}
 
-	componentDidMount() {
-
-	}
-
-	componentWillUnmount() {
-
-	}
-
 	handleCallback({ status, errorType, position }) {
 		if (status === STATUS.ERROR && errorType === 'authentication_error') {
 			localStorage.removeItem('token');
@@ -74,14 +66,11 @@ class PartyJoined extends Component {
 				<SearchModal 
 					show={this.state.showModal}
 					handleClose={this.handleModal.bind(this)}
+					handleSongAdd={this.props.handleSongAdd}
 				/>
 
 				<div className="title">
 					<h1>Song Queue </h1>
-				</div>
-
-				<div className="listViewSongQueue">
-					renderQueueItems(this.props.queue)
 				</div>
 
 				{

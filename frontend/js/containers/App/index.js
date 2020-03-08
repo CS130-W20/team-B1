@@ -17,7 +17,7 @@ const App = () => (
 			<Route exact path="/host" component={PartyWrapper} />
 			<Route exact path="/login" component={SpotifyLogin} />
 			<Route exact path="/join" component={PartyWrapper} />
-			<Route exact path="/party" component={PartyJoined} />
+			<Route exact path="/party" component={PartyWrapper} />
 			<Route exact path="/callback" component={OAuthCallback} />
 			<Route component={ErrorMessage}/> {/* This is the 404 fallback */}
 		</Switch>

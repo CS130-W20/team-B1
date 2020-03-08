@@ -1,6 +1,5 @@
 import React from 'react';
 import { Button } from 'reactstrap';
-import { withRouter } from 'react-router-dom'
 
 import 'bootstrap/dist/css/bootstrap.css';
 import '../css/MainScreen.css';

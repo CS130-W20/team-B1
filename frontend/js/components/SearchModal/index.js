@@ -14,7 +14,13 @@ class SearchModal extends Component {
       searchString: '',
       searchResults: null,
     }
-	}
+  }
+  
+  componentDidUpdate() {
+    if (!this.props.show && this.state.searchResults) {
+      this.setState({searchResults: null})
+    }
+  }
 
 	handleFormChange(e) {
     const name = e.target.name;
@@ -47,10 +53,6 @@ class SearchModal extends Component {
     .catch(error => this.setState({error: error.message}));
   }
 
-  handleSongAdd(result) {
-    console.log(`${result.song_name} should be added!`)
-  }
-
 	render() {
   	return (
       <Modal show={this.props.show} onHide={this.props.handleClose}>
@@ -62,7 +64,6 @@ class SearchModal extends Component {
             <Form className="searchBar" onSubmit={this.handleFormSubmit}>
               <FormControl
                 type="text"
-                placeholder="Stairway to Heaven"
                 name="searchString"
                 className="mr-sm-2"
                 onChange={this.handleFormChange.bind(this)} 
@@ -84,7 +85,7 @@ class SearchModal extends Component {
                     <div className="column middle songArtist">{result.artist_name}</div>
                   </a>
                   <div className="column right buttonCard">
-                    <Button className="AddButton" color="success" onClick={() => this.handleSongAdd(result)}>Add</Button>
+                    <Button className="AddButton" color="success" onClick={() => this.props.handleSongAdd(result)}>Add</Button>
                   </div>
                 </div>
               ))}

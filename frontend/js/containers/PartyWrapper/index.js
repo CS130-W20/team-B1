@@ -12,7 +12,11 @@ class PartyWrapper extends Component {
 		super(props);
 		const renderingHost = this.props.location.pathname == '/host';
 		const renderingJoin = this.props.location.pathname == '/join';
-		const shouldAbort = this.props.location.pathname == '/host' && (!this.props.location.state || !this.props.location.state.prevRoute || this.props.location.state.prevRoute != 'OAuthCallback');
+		const renderingParty = this.props.location.pathname == '/party';
+		const shouldAbort = 
+			this.props.location.pathname == '/host' && (!this.props.location.state || !this.props.location.state.prevRoute || this.props.location.state.prevRoute != 'OAuthCallback')
+			|| renderingParty // if rendering party in constructor, we should leave
+		;
 		this.socket = new WebSocketAsPromised('ws://localhost:8000/ws/party/', {
 			createWebSocket: url => renderingHost ? new WebSocket(url, ['Token', localStorage.getItem('token')]) : new WebSocket(url),
 			packMessage: data => JSON.stringify(data),
@@ -36,7 +40,7 @@ class PartyWrapper extends Component {
 
 	componentDidMount() {
 		if (this.state.abort) {
-      this.props.history.push('/login');
+      this.props.history.push('/');
 		}
 		else if(this.state.renderingHost) {
 			this.socket.open()
@@ -103,6 +107,10 @@ class PartyWrapper extends Component {
 		.catch(error => this.setState({abortiveError: error})); // TODO: more robust?
 	}
 
+	handleSongAdd(item) {
+		console.log(`${item.song_name} added!`);
+	}
+
 	render() {
 		if (this.state.abort) {
 			return <Loading />;
@@ -124,6 +132,7 @@ class PartyWrapper extends Component {
 					partyName={this.state.partyName}
 					songList={this.state.songList}
 					hosting={this.state.renderingHost}
+					handleSongAdd={this.handleSongAdd.bind(this)}
 				/>
 			);
 		}
