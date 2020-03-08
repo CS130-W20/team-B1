@@ -36,6 +36,24 @@ class PartyJoined extends Component {
 	handleModal() {
 		this.setState({showModal: !this.state.showModal});
 	}
+	
+	renderQueueItems(props) {
+  		return (
+  			<div className="list-group">
+				<a href="#" className="list-group-item list-group-item-action listQueue">
+					<div className="column left">
+						<img className="albumArtwork" src={this.props.queue.albumArtwork} alt="cover" />
+					</div>
+
+					<div className="column middle">src={this.props.queue.songName} </div>
+
+					<div className="column right buttonCard">
+						<Button className="SkipButton" color="danger" onclick="skipSong()"> Skip </Button>
+					</div>
+				</a>
+			</div>
+  		);
+	}
 
 	render() {
   	return (
@@ -63,20 +81,9 @@ class PartyJoined extends Component {
 				</div>
 
 				<div className="listViewSongQueue">
-					<div className="list-group">
-						<a href="#" className="list-group-item list-group-item-action listQueue">
-							<div className="column left">
-								<img className="albumArtwork" src="https://www.w3schools.com/images/w3schools_green.jpg" alt="W3Schools.com" />
-							</div>
-
-							<div className="column middle">Name of Song</div>
-
-							<div className="column right buttonCard">
-								<Button className="SkipButton" color="danger">Skip</Button>
-							</div>
-						</a>
-					</div>
+					renderQueueItems(this.props.queue)
 				</div>
+
 				{
 					this.props.hosting ?
 					<SpotifyWebPlayer
