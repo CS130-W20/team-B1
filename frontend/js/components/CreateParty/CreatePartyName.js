@@ -22,11 +22,15 @@ class CreatePartyName extends Component {
 	}
 
 	handleFormSubmit(event) {
-		if(event.key === 'Enter') {
-			this.props.handlePartyCreate(this.state.partyName);
-		} 
 		event.preventDefault();
 	}
+
+	handleKeyPress(event) {
+    if (event.key == 'Enter' && this.state.partyName != '') {
+			this.setState({buttonPushed: true}); 
+			this.props.handlePartyCreate(this.state.partyName);
+    }
+  }
 
 	render() {
 		return (
@@ -41,6 +45,7 @@ class CreatePartyName extends Component {
 							name="partyName" 
 							placeholder={`${this.props.user.name}\'s Party`} 
 							onChange={this.handleFormChange.bind(this)} 
+							onKeyPress={this.handleKeyPress.bind(this)}
 						/>
 					</Form.Group>
 				</Form>

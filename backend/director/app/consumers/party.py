@@ -96,6 +96,17 @@ class PartyConsumer(AsyncWebsocketConsumer):
             }
         )
 
+    async def song_added(self, event):
+        """
+        Notify all party members that a song has been added
+        """
+        await self._send_channel_message(
+            {
+                'command': 'song_added',
+                'song': event['data']
+            }
+        )
+
     #------------------------------------------------------------------
     # Command Processors
     #------------------------------------------------------------------
@@ -211,6 +222,13 @@ class PartyConsumer(AsyncWebsocketConsumer):
     async def _process_add_song_command(self, data):
         # TODO: need to send song info to everyone else
         if await add_song_to_queue(self.user, self.party, data):
+            await self.channel_layer.group_send(
+            self.party.host_code,
+                {
+                    'type': 'song_added',
+                    'data': data
+                }
+            )
             await self._send_response(status=status.HTTP_204_NO_CONTENT, id=data['id'])
             return
         else:

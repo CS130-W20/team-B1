@@ -2,9 +2,13 @@
     max-width: 10em
 }
 
-.fixedToBottom {
+._PlayerRSWP.__1v1a1mw {
     position: fixed;
     left: 0;
     bottom: 0;
     width: 100%;
+}
+
+._ControlsRSWP.__1g1kf0v {
+    z-index: 1;
 }

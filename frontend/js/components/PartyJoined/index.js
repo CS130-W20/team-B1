@@ -14,27 +14,39 @@ class PartyJoined extends Component {
 			error: null,
 			showModal: false,
 			songOffset: 0,
-			position: 0
+			position: 0,
+			autoPlay: true,
 		}
 	}
 
-	handleCallback({ status, errorType, position, track }) {
-		const offset = this.props.songList.findIndex(ele => ele == track.uri);
-		console.log(`offset: ${offset}`)
+	handleCallback({ status, errorType, position, previousTracks }) {
+		console.log(`~~~~~~~~~`)
+		console.log(`previousTracks:`)
+		console.log(previousTracks)
 		console.log(`this.state.songOffset: ${this.state.songOffset}`);
+		console.log(`position: ${position}`);
+		console.log(`this.state.position: ${this.state.position}`);
+		console.log(`~~~~~~~~~`)
 		if (status === STATUS.ERROR && errorType === 'authentication_error') {
 			localStorage.removeItem('token');
 			// TODO: update token
 			setToken('');
 		}
-		else if (this.state.songOffset < offset) {
-			this.setState({songOffset: offset});
+		if (this.state.position < position && position >= 0) {
+			this.setState({position: position});
 		}
-		this.setState({position: position})
+		if (previousTracks.length > this.state.songOffset || previousTracks.length == this.state.songOffset) {
+			this.setState({songOffset: previousTracks.length});
+		}
 	}
 
 	handleModal() {
 		this.setState({showModal: !this.state.showModal});
+	}
+
+	handleSongAdd(data) {
+		this.setState({showModal: false, autoPlay: false}); 
+		this.props.handleSongAdd(data);
 	}
 	
 	renderQueueItems(props) {
@@ -75,7 +87,7 @@ class PartyJoined extends Component {
 				<SearchModal 
 					show={this.state.showModal}
 					handleClose={this.handleModal.bind(this)}
-					handleSongAdd={(data) => {this.setState({showModal: false}); this.props.handleSongAdd(data)}}
+					handleSongAdd={this.handleSongAdd.bind(this)}
 				/>
 
 				<div className="title">
@@ -87,7 +99,7 @@ class PartyJoined extends Component {
 				{
 					this.props.hosting ?
 					<SpotifyWebPlayer
-						autoPlay
+						autoPlay={this.state.autoPlay}
 						callback={this.handleCallback.bind(this)}
 						persistDeviceSelection
 						play={false}
@@ -97,8 +109,8 @@ class PartyJoined extends Component {
 						styles={{
 							sliderColor: '#1cb954',
 						}}
+						name={'Director Web Player'}
 						offset={this.state.songOffset}
-						className="fixedToBottom"
 						uris={this.props.songList}
 						position={this.state.position}
 					/>

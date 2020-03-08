@@ -29,11 +29,15 @@ class JoinPartyName extends Component {
 	}
 
 	handleFormSubmit(event) {
-		if(event.key === 'Enter') {
-			this.props.handlePartyJoin(this.state.partyCode);
-		} 
 		event.preventDefault();
 	}
+
+	handleKeyPress(event) {
+    if (event.key == 'Enter' && this.state.partyCode != '' && this.state.username != '') {
+			this.setState({buttonPushed: true});
+      this.props.handlePartyJoin(this.state.partyCode, this.state.username);
+    }
+  }
 
 	render() {
 		return (
@@ -48,6 +52,7 @@ class JoinPartyName extends Component {
 							name="username" 
 							placeholder={'username'} 
 							onChange={this.handleFormChange.bind(this)} 
+							onKeyPress={this.handleKeyPress.bind(this)}
 						/>
 					</Form.Group>
 					<Form.Group controlId="partyCode" className="enterCode">
@@ -55,6 +60,7 @@ class JoinPartyName extends Component {
 							name="partyCode" 
 							placeholder={'Party Code'} 
 							onChange={this.handleFormChange.bind(this)} 
+							onKeyPress={this.handleKeyPress.bind(this)}
 						/>
 					</Form.Group>
 				</Form>
