@@ -23,6 +23,7 @@ router.register(r'users', views.UserViewSet)
 router.register(r'songs', views.SongViewSet)
 router.register(r'songrequests', views.SongRequestViewSet)
 router.register(r'parties', views.PartyViewSet)
+router.register(r'queues', views.PartyQueueViewSet)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
