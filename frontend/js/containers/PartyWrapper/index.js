@@ -130,7 +130,6 @@ class PartyWrapper extends Component {
 				this.setState({error: resp.error});
 			}
 			else {
-				console.log(resp);
 				this.setState({user: {name: username}, partyBegun: true, queue: resp.queue.slice(resp.offset)});
 			}
 		})
@@ -189,6 +188,8 @@ class PartyWrapper extends Component {
 					advanceQueue={this.advanceQueue.bind(this)}
 					handleSongSkip={this.handleSongSkip.bind(this)}
 					songOffset={this.state.songListOffset}
+					user={this.state.user}
+					socket={this.socket}
 				/>
 			);
 		}

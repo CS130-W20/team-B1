@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Button } from 'reactstrap';
-import { Form, FormControl } from 'react-bootstrap'  
 import SpotifyWebPlayer, { STATUS } from 'react-spotify-web-playback';
 
 import SearchModal from '../SearchModal';
+import Chat from '../Chat';
 
 import '../css/SpotifyPlayer.css';
 
@@ -110,6 +110,11 @@ class PartyJoined extends Component {
 						))}
 					</div>
 				</div>
+
+				<Chat 
+					socket={this.props.socket}
+					user={this.props.user}
+				/>
 
 				{
 					this.props.hosting ?
