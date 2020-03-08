@@ -1,0 +1,107 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing Spotify Login Page correctly renders 1`] = `
+<div
+  className="JoinPartyList"
+>
+  <div
+    class="title"
+  >
+    <h1>
+      Live Parties 
+    </h1>
+  </div>
+  <div
+    class="list-group"
+  >
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      First item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Second item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+    <a
+      class="list-group-item list-group-item-action listCard"
+      href="#"
+    >
+      Third item
+    </a>
+  </div>
+  <div
+    class="note"
+  >
+    <p>
+      No need to enter a code to join. 
+    </p>
+    <p>
+      Can access any party in your area. 
+    </p>
+  </div>
+</div>
+`;

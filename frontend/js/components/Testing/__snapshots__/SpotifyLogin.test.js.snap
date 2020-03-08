@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing Spotify Login Page correctly renders 1`] = `
+<div
+  className="SpotifyLogin"
+>
+  <div
+    className="buttons"
+  >
+    <button
+      aria-label={null}
+      className="button btn btn-success"
+      onClick={[Function]}
+      type="button"
+    >
+       Login to Spotify
+      <small>
+         You are the life of the party! 
+      </small>
+    </button>
+  </div>
+</div>
+`;
