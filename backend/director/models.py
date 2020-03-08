@@ -158,21 +158,36 @@ class Party(models.Model):
         :raises: if user with user_id not in guest list.
         """
         user = User.objects.get(id=user_id)
-        if user == host:
-            # TODO: what to do if a host tries to leave?
-            pass
-        guest = self.guests.get(id=user_id)
-        guest.delete()
+        if user == self.host:
+            # TODO: export history to playlist
+            self.delete()
+
+        else:
+            guest = self.guests.get(id=user_id)
+            guest.delete()
+
+    def delete(self, using=None):
+        if self.guests:
+            list(map(lambda guest: guest.delete(), self.guests))
+        if self.queue:
+            self.queue.delete()
+        if self.host:
+            self.host.delete()
+        super(Party, self).delete(using)
         
     def searchForSong(self, query):
         # TODO
         pass
     
     def requestSong(self, user, song):
+        if user not in self.guests:
+            return False
         ret = self.queue.addSong(user, song)
         return ret
     
     def requestSkip(self, user, song_request):
+        if user not in self.guests:
+            return False
         ret = song_request.skip_requests.add(user)
         # TODO: check if skip threshold is met
         return ret

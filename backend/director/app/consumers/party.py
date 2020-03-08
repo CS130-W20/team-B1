@@ -39,10 +39,16 @@ class PartyConsumer(AsyncWebsocketConsumer):
             await self.close()
             return
 
-        # TODO: delete party and boot users if host leaves
-
         if self.party is not None:
             await leave_party(self.user.id, self.party)
+
+            if self.authenticated: # if user is host
+                await self.channel_layer.group_send(
+                    self.party.host_code,
+                    {
+                        'type': 'party_ended',
+                    }
+                )
 
             await self.channel_layer.group_discard(
                 self.party.host_code,
@@ -78,6 +84,16 @@ class PartyConsumer(AsyncWebsocketConsumer):
             'command': 'chat',
             'message': message
         })
+
+    async def party_ended(self, event):
+        """
+        Notify all party members that the party has ended
+        """
+        await self._send_channel_message(
+            {
+                'message': 'Host has ended the party!'
+            }
+        )
 
     #------------------------------------------------------------------
     # Command Processors
