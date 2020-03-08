@@ -42,9 +42,9 @@ class Token(models.Model):
 
 class Song(models.Model):
     # the custom song_id will be that coming from the music provider
-    uri = models.CharField(max_length=50, primary_key=True)
-    name = models.CharField(max_length=50)
-    artist = models.CharField(max_length=50)
+    uri = models.TextField(primary_key=True)
+    name = models.TextField()
+    artist = models.TextField()
     album_art = models.URLField(blank=True)
 
     def __str__(self):

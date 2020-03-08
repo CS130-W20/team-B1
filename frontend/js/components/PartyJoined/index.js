@@ -20,13 +20,6 @@ class PartyJoined extends Component {
 	}
 
 	handleCallback({ status, errorType, position, previousTracks }) {
-		console.log(`~~~~~~~~~`)
-		console.log(`previousTracks:`)
-		console.log(previousTracks)
-		console.log(`this.state.songOffset: ${this.state.songOffset}`);
-		console.log(`position: ${position}`);
-		console.log(`this.state.position: ${this.state.position}`);
-		console.log(`~~~~~~~~~`)
 		if (status === STATUS.ERROR && errorType === 'authentication_error') {
 			localStorage.removeItem('token');
 			// TODO: update token
@@ -35,8 +28,26 @@ class PartyJoined extends Component {
 		if (this.state.position < position && position >= 0) {
 			this.setState({position: position});
 		}
-		if (previousTracks.length > this.state.songOffset || previousTracks.length == this.state.songOffset) {
-			this.setState({songOffset: previousTracks.length});
+		
+		let latestPreviousTrack = null;
+		if (previousTracks.length > 0) { // previousTracks max length is capped at 2
+			latestPreviousTrack = previousTracks.length == 2 ? previousTracks[1] : previousTracks[0];
+		}
+		const uri_to_match = latestPreviousTrack ? (latestPreviousTrack.linked_from_uri ? latestPreviousTrack.linked_from_uri : latestPreviousTrack.uri) : null;
+		const newTrackLength = latestPreviousTrack != null ? this.props.songList.findIndex(ele => ele == uri_to_match) + 1 : 0;
+
+		console.log(`~~~~~~~~~`)
+		console.log(`latesTPreviousTrack: ${latestPreviousTrack}`);
+		console.log(previousTracks)
+		console.log(`newTrackLength: ${newTrackLength}`)
+		console.log(`latestPreviousTrack.uri: ${uri_to_match}`)
+		console.log(`this.state.songOffset: ${this.state.songOffset}`);
+		console.log(`position: ${position}`);
+		console.log(`this.state.position: ${this.state.position}`);
+		console.log(this.props.songList)
+		console.log(`~~~~~~~~~`)
+		if (newTrackLength > this.state.songOffset || (newTrackLength == this.state.songOffset - 2)) {
+			this.setState({songOffset: newTrackLength});
 		}
 	}
 
