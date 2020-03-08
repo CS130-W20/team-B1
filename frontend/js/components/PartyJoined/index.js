@@ -13,16 +13,24 @@ class PartyJoined extends Component {
 		this.state = {
 			error: null,
 			showModal: false,
+			songOffset: 0,
+			position: 0
 		}
 	}
 
-	handleCallback({ status, errorType, position }) {
+	handleCallback({ status, errorType, position, track }) {
+		const offset = this.props.songList.findIndex(ele => ele == track.uri);
+		console.log(`offset: ${offset}`)
+		console.log(`this.state.songOffset: ${this.state.songOffset}`);
 		if (status === STATUS.ERROR && errorType === 'authentication_error') {
 			localStorage.removeItem('token');
 			// TODO: update token
 			setToken('');
-			console.log(position)
 		}
+		else if (this.state.songOffset < offset) {
+			this.setState({songOffset: offset});
+		}
+		this.setState({position: position})
 	}
 
 	handleModal() {
@@ -48,6 +56,7 @@ class PartyJoined extends Component {
 	}
 
 	render() {
+		console.log(`songList: ${this.props.songList}`)
   	return (
 			<div className="PartyJoined">
 				<div className="title">
@@ -66,18 +75,20 @@ class PartyJoined extends Component {
 				<SearchModal 
 					show={this.state.showModal}
 					handleClose={this.handleModal.bind(this)}
-					handleSongAdd={this.props.handleSongAdd}
+					handleSongAdd={(data) => {this.setState({showModal: false}); this.props.handleSongAdd(data)}}
 				/>
 
 				<div className="title">
 					<h1>Song Queue </h1>
 				</div>
 
+				{this.props.error ? <small className="error">{this.props.error}</small> : null}
+
 				{
 					this.props.hosting ?
 					<SpotifyWebPlayer
 						autoPlay
-						callback={this.handleCallback}
+						callback={this.handleCallback.bind(this)}
 						persistDeviceSelection
 						play={false}
 						magnifySliderOnHover
@@ -86,7 +97,10 @@ class PartyJoined extends Component {
 						styles={{
 							sliderColor: '#1cb954',
 						}}
+						offset={this.state.songOffset}
+						className="fixedToBottom"
 						uris={this.props.songList}
+						position={this.state.position}
 					/>
 					:
 					null

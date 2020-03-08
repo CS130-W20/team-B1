@@ -32,7 +32,7 @@ class PartyWrapper extends Component {
 			partyCode: null,
 			partyName: null,
 			partyBegun: false,
-			songList: [],
+			songList: ['spotify:track:421leiR6jKlH5KDdwLYrOs', 'spotify:track:2b8fOow8UzyDFAE27YhOZM'],
 			abortiveError: null,
 			error: null,
 		}
@@ -94,7 +94,7 @@ class PartyWrapper extends Component {
 			'command': 'create',
 			'name': partyName
 		})
-		.catch(error => this.setState({abortiveError: error})); // todo: more robust?
+		.catch(error => this.setState({error: error})); // todo: more robust?
 	}
 
 	handlePartyJoin(partyCode, username) {
@@ -104,11 +104,24 @@ class PartyWrapper extends Component {
 			'user': username,
 			'party': partyCode
 		})
-		.catch(error => this.setState({abortiveError: error})); // TODO: more robust?
+		.catch(error => this.setState({error: error})); // TODO: more robust?
 	}
 
-	handleSongAdd(item) {
-		console.log(`${item.song_name} added!`);
+	handleSongAdd(data) {
+		data['command'] = 'add_song'
+		console.log(data)
+		this.socket.sendRequest(data)
+			.then(resp => {
+				console.log("I'm here!")
+				if (resp.status > 400) {
+					this.setState({error: resp.message});
+				}
+				else {
+					console.log("setting songList")
+					this.setState({songList: [...this.state.songList, data['uri'],]});
+				}
+			})
+			.catch(error => this.setState({abortiveError: error.message}));
 	}
 
 	render() {
@@ -133,6 +146,7 @@ class PartyWrapper extends Component {
 					songList={this.state.songList}
 					hosting={this.state.renderingHost}
 					handleSongAdd={this.handleSongAdd.bind(this)}
+					error={this.state.error}
 				/>
 			);
 		}

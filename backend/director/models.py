@@ -42,10 +42,9 @@ class Token(models.Model):
 
 class Song(models.Model):
     # the custom song_id will be that coming from the music provider
-    song_id = models.CharField(max_length=30, primary_key=True)
+    uri = models.CharField(max_length=50, primary_key=True)
     name = models.CharField(max_length=50)
     artist = models.CharField(max_length=50)
-    album = models.CharField(max_length=50)
     album_art = models.URLField(blank=True)
 
     def __str__(self):
@@ -97,7 +96,10 @@ class PartyQueue(models.Model):
         req = SongRequest.objects.create(song=song, requester_id=user)
         if req:
             self.queue.add(req)
-        return req
+            print('addSong t')
+            return True
+        print('addSong f')
+        return False
     
     def removeSong(self, song_request):
         self.queue.remove(song_request)
@@ -179,7 +181,7 @@ class Party(models.Model):
         pass
     
     def requestSong(self, user, song):
-        if user not in self.guests:
+        if user not in self.guests.all() and user != self.host:
             return False
         ret = self.queue.addSong(user, song)
         return ret

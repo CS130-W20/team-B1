@@ -6,7 +6,7 @@ from django.contrib.auth.models import AnonymousUser
 
 import json
 
-from .model_interactions.handlers import join_party, leave_party, create_party
+from .model_interactions.handlers import join_party, leave_party, create_party, add_song_to_queue
 
 class PartyConsumer(AsyncWebsocketConsumer):
     #------------------------------------------------------------------
@@ -91,7 +91,8 @@ class PartyConsumer(AsyncWebsocketConsumer):
         """
         await self._send_channel_message(
             {
-                'message': 'Host has ended the party!'
+                'command': 'vacate',
+                'message': 'The host has ended the party!'
             }
         )
 
@@ -180,7 +181,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
                 'party_name': self.party.name
             },
             status=status.HTTP_200_OK
-            )
+        )
         return
 
     async def _process_chat_command(self, data):
@@ -192,7 +193,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
 
         # Send message to match group
         await self.channel_layer.group_send(
-            self.match_group_id,
+            self.party.host_code,
             {
                 'type': 'chat_message',
                 'message': message,
@@ -208,7 +209,20 @@ class PartyConsumer(AsyncWebsocketConsumer):
         return False # TODO: stub
 
     async def _process_add_song_command(self, data):
-        return False # TODO: stub
+        # TODO: need to send song info to everyone else
+        if await add_song_to_queue(self.user, self.party, data):
+            await self._send_response(status=status.HTTP_204_NO_CONTENT, id=data['id'])
+            return
+        else:
+            await self._send_response(
+                {
+                    'command': 'unavailable',
+                    'message': 'Song request failed. Please try again later.',
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+                id=data['id']
+            )
+            return
 
     #------------------------------------------------------------------
     # Data Validation
@@ -279,17 +293,16 @@ class PartyConsumer(AsyncWebsocketConsumer):
                 elif command_group == 'add_song':
                     verified_group = True
                     error_package = {
-                        'error': 'add song request must include key \'song\' valued to a valid Spotify URI.'
+                        'error': 'add song request must include key \'name\', \'uri\', \'artist\', \'album_art\' all valued properly.'
                     }
                     if not isinstance(data[command], str):
                         await self._send_response(error_package, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
                         return False
-                    contains_prefix = data[command].find('spotify:track:') != -1
-                    # we don't have to do more complex checking because _process_add_song will check 
-                    # the model to see if it was properly added already, and reject if not
-                    if not contains_prefix:
-                        await self._send_response(error_package, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
-                        return False
+                    if data[command] == 'uri':
+                        contains_prefix = data[command].find('spotify:track:') != -1
+                        if not contains_prefix:
+                            await self._send_response(error_package, status=status.HTTP_400_BAD_REQUEST, id=data['id'])
+                            return False
             elif command_group == 'join':
                 # if we are missing a join command, we must abort
                 await self._send_response({
@@ -313,7 +326,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
     channel_commands = [] # TODO: fill this out
     # these are commands which can be called by the user within a command group, hence available in dispatch_command
     chat_commands = ['message']
-    add_song_commands = ['song']
+    add_song_commands = ['song_name', 'album_art', 'artist_name', 'uri']
     join_commands = ['party', 'user']
     create_commands = ['name']
     # non-keyed command groups are ones which need no further info from the user other than the command itself

@@ -1,3 +1,10 @@
 .__3rjnua.__378pd {
     max-width: 10em
 }
+
+.fixedToBottom {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}

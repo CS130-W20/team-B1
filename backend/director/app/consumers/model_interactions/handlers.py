@@ -60,6 +60,29 @@ def create_party(user, party_name):
     return Party.objects.createParty(user, party_name)
 
 @database_sync_to_async
+def add_song_to_queue(user, party, song_data):
+    """
+    Has user add song to party's queue.
+
+    :param User user: a party guest/host.
+    :param Party party: the party.
+    :param dict song_data: data pertinent to the song.
+    :rtype: bool
+    :return: True if successful, False otherwise.
+    """
+    try:
+        song = Song.objects.get(uri=song_data['uri'])
+    except:
+        song = Song.objects.create(
+            uri=song_data['uri'], 
+            name=song_data['song_name'],
+            artist=song_data['artist_name'],
+            album_art=song_data['album_art']
+        )
+        song.save()
+    return party.requestSong(user, song)
+
+@database_sync_to_async
 def execute_veto(user, party):
     """
     Attempts to have user veto the current song in the party.
