@@ -101,6 +101,12 @@ class PartyWrapper extends Component {
 					delete song_data.id;
 					this.setState({queue: [...this.state.queue, song_data], songList: [...this.state.songList, song_data.uri]})
 					break
+				case 'advance_queue':
+					if (this.state.hosting) {
+						return;
+					}
+					this.setState({queue: this.state.queue.slice(1)});
+					break
 			}
 		}
 	}
@@ -125,10 +131,16 @@ class PartyWrapper extends Component {
 			}
 			else {
 				console.log(resp);
-				this.setState({user: {name: username}, partyBegun: true, queue: resp.queue});
+				this.setState({user: {name: username}, partyBegun: true, queue: resp.queue.slice(resp.offset)});
 			}
 		})
 		.catch(error => this.setState({error: error})); // TODO: more robust?
+	}
+	
+	advanceQueue() {
+		this.socket.sendRequest({
+			'command': 'advance_queue'
+		}).then(this.setState({queue: this.state.queue.slice(1)}));
 	}
 
 	handleSongAdd(data) {
@@ -168,6 +180,7 @@ class PartyWrapper extends Component {
 					hosting={this.state.hosting}
 					handleSongAdd={this.handleSongAdd.bind(this)}
 					queue={this.state.queue}
+					advanceQueue={this.advanceQueue.bind(this)}
 				/>
 			);
 		}

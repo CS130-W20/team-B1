@@ -94,4 +94,12 @@ def execute_veto(user, party):
 def get_queue(party):
     party_queue_list = list(party.getQueue())
     song_list = [SongSerializer(sr.song).data for sr in party_queue_list]
-    return song_list
+    
+    return song_list, party.queue.offset
+
+@database_sync_to_async
+def advance_queue(party):
+    queue = party.queue
+    queue.offset += 1
+    queue.save()
+    return queue.offset

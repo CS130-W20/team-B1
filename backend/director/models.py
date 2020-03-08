@@ -91,6 +91,7 @@ class PartyQueue(models.Model):
     queue = models.ManyToManyField(SongRequest, related_name='queue')
     history = models.ManyToManyField(SongRequest, related_name='history')
     skipped = models.ManyToManyField(SongRequest, related_name='skipped')
+    offset = models.PositiveIntegerField(default=0)
 
     def addSong(self, user, song):
         req = SongRequest.objects.create(song=song, requester_id=user)

@@ -6,7 +6,7 @@ from django.contrib.auth.models import AnonymousUser
 
 import json
 
-from .model_interactions.handlers import join_party, leave_party, create_party, add_song_to_queue, get_queue
+from .model_interactions.handlers import join_party, leave_party, create_party, add_song_to_queue, get_queue, advance_queue
 
 class PartyConsumer(AsyncWebsocketConsumer):
     #------------------------------------------------------------------
@@ -107,6 +107,17 @@ class PartyConsumer(AsyncWebsocketConsumer):
             }
         )
 
+    async def queue_advance(self, event):
+        """
+        Notify all party members that the queue has moved up one song
+        """
+        await self._send_channel_message(
+            {
+                'command': 'advance_queue',
+                'offset': event['offset']
+            }
+        )
+
     #------------------------------------------------------------------
     # Command Processors
     #------------------------------------------------------------------
@@ -145,12 +156,14 @@ class PartyConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        queue, offset = await get_queue(self.party)
         await self._send_response(
             {
                 'command': 'party',
                 'party_code': self.party.host_code,
                 'party_name': self.party.name,
-                'queue': await get_queue(self.party)
+                'queue': queue,
+                'offset': offset,
             },
             status=status.HTTP_200_OK,
             id=data['id']
@@ -245,6 +258,26 @@ class PartyConsumer(AsyncWebsocketConsumer):
                 id=data['id']
             )
             return
+
+    async def _process_advance_queue_command(self, data):
+        if not self.authenticated:
+            return
+        offset = await advance_queue(self.party)
+        await self.channel_layer.group_send(
+            self.party.host_code,
+                {
+                    'type': 'queue_advance',
+                    'offset': offset
+                }
+            )
+        await self._send_response(
+            {
+                'command': 'advance_queue',
+                'offset': offset
+            }, 
+            status=status.HTTP_200_OK,
+            id=data['id']
+        )
 
     #------------------------------------------------------------------
     # Data Validation
@@ -352,8 +385,8 @@ class PartyConsumer(AsyncWebsocketConsumer):
     join_commands = ['party', 'user']
     create_commands = ['name']
     # non-keyed command groups are ones which need no further info from the user other than the command itself
-    non_keyed_command_groups = ['request_skip', 'veto']
-    command_groups = ['request_skip', 'chat', 'veto', 'add_song', 'join', 'create']
+    non_keyed_command_groups = ['request_skip', 'veto', 'advance_queue']
+    command_groups = ['request_skip', 'chat', 'veto', 'add_song', 'join', 'create', 'advance_queue']
     dispatch_command = {
         'veto': _process_veto_command,
         'request_skip': _process_request_skip_command,
@@ -361,6 +394,7 @@ class PartyConsumer(AsyncWebsocketConsumer):
         'chat': _process_chat_command,
         'join': _process_join_command,
         'create': _process_create_command,
+        'advance_queue': _process_advance_queue_command,
     }
 
     #------------------------------------------------------------------

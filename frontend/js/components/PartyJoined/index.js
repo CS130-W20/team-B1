@@ -47,7 +47,8 @@ class PartyJoined extends Component {
 		console.log(this.props.songList)
 		console.log(`~~~~~~~~~`)
 		if (newTrackLength > this.state.songOffset) { // we disallow backtracking in the queue now || (newTrackLength == this.state.songOffset - 2)) {
-			this.setState({songOffset: newTrackLength}); // TODO: update queue state
+			this.setState({songOffset: newTrackLength});
+			this.props.advanceQueue();
 		}
 	}
 
