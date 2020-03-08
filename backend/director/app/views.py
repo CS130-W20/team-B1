@@ -74,6 +74,7 @@ class MusicService(APIView):
     def get(self, request, format='json'):
         """
         :method: GET
+        :param str token: a valid Spotify API token.
         :param str query: a valid search query constructed via URL notation to apply to Spotify's backend.
         :rtype: json
         :return:
@@ -81,14 +82,26 @@ class MusicService(APIView):
             value: a list of all tracks matching the query, with their associated info
         """
         self._validate_get_request(request)
-        search_url = '{}?q={}&type=track'.format(SPOTIFY_SEARCH_URL,
-                                                 request.data['query'])
-        resp = requests.get(search_url,
-                            headers={
-                                'Authorization':
-                                'Bearer {}'.format(request.data['token'])
-                            })
-        return Response(json.loads(resp.text), status=resp.status_code)
+
+        spotify = Spotify(request.data['token'])
+        result = spotify.search(request.data['query'])
+        return Response(self._parse_results(result), status=status.HTTP_200_OK)
+
+    def _parse_results(self, spotipy_results):
+        songs = spotipy_results['tracks']['items']
+        parsed_result = []
+        for song in songs:
+            song_result = {}
+            song_result['artist_name'] = song['artists'][0]['name']
+            song_result['album_art'] = song['album']['images'][1]['url']
+            song_result['song_name'] = song['name']
+            song_result['uri'] = song['uri']
+            song_result['url'] = song['external_urls']['spotify']
+            parsed_result.append(song_result)
+
+        return {'songs': parsed_result}
+
+
 
     def _validate_get_request(self, request):
         if not request.data:
