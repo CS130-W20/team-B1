@@ -10,6 +10,7 @@ import JoinPartyName from '../../components/JoinParty/JoinPartyName';
 import JoinPartyList from '../../components/JoinParty/JoinPartyList';
 import PartyJoined from '../../components/PartyJoined';
 import OAuthCallback from '../../components/OAuthCallback';
+import Chat from '../../components/Chat';
 
 const App = () => (
 	<Router history={history}>
@@ -21,6 +22,7 @@ const App = () => (
 			<Route exact path="/join" component={JoinPartyList} />
 			<Route exact path="/party" component={PartyJoined} /> {/* TODO: need to make URL tied to paty id/name */}
 			<Route exact path="/callback" component={OAuthCallback} /> {/* TODO: need to make this restricted */}
+			<Route exact path="/chat" component={Chat}/>
 		</Switch>
 	</Router>
 );

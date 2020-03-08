@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import { Widget, addResponseMessage } from 'react-chat-widget';
 import 'react-chat-widget/lib/styles.css';
-import { connect } from 'react-redux';
-import { userActions } from '../../redux/actions/UsersActions';
+// import { connect } from 'react-redux';
+// import { userActions } from '../../redux/actions/UsersActions';
 
 
 class Chat extends Component {
@@ -16,7 +16,6 @@ class Chat extends Component {
   }
 
   componentDidMount() {
-    this.props.getCurrent()
     if (this.props.socket && !this.state.socketResponseHandlerAdded) {
       this.props.socket.onMessage.addListener(data => this.handleResponseMessage(data))
       this.setState({socketResponseHandlerAdded: true})
@@ -30,7 +29,7 @@ class Chat extends Component {
     }
   }
 
-  handleResponseMessage = (data) => {
+  handleResponseMessage(data) {
     let json = JSON.parse(data)
     if (json.command != 'chat') {
       return;
@@ -42,7 +41,7 @@ class Chat extends Component {
     this.setState({unrepliedMessages: this.state.unrepliedMessages + 1})
   }
   
-  handleNewUserMessage = (message) => {
+  handleNewUserMessage(message) {
     this.props.socket.sendRequest({
         'command': 'chat',
         'message': message
@@ -62,6 +61,7 @@ class Chat extends Component {
   }
 }
 
+/*
 function mapStateToProps (state) {
   const user = state.user.currentUser;
   const socket = state.socket.socket;
@@ -72,4 +72,8 @@ const actionCreators = {
   getCurrent: userActions.getCurrent,
 }
 
+
 export default connect(mapStateToProps, actionCreators)(Chat);
+*/
+
+export default Chat
