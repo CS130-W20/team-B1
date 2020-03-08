@@ -1,3 +1,4 @@
+/*
 import React from 'react';
 import renderer from 'react-test-renderer';
 
@@ -9,3 +10,4 @@ describe ('Testing Spotify Login Page', () => {
         expect(wrapper).toMatchSnapshot();
     });
 });
+*/
