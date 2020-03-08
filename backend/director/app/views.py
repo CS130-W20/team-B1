@@ -18,6 +18,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 from spotipy import Spotify
+from spotipy.client import SpotifyException
 from ..SpotipyRest.oauth2 import SpotifyOAuthRest
 
 from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer, PartyQueueSerializer
@@ -71,7 +72,7 @@ class MusicService(APIView):
     """
     Interacts with the spotify API, based on the passed token, and returns the results.
     """
-    def get(self, request, format='json'):
+    def post(self, request, format='json'):
         """
         :method: GET
         :param str token: a valid Spotify API token.
@@ -84,8 +85,33 @@ class MusicService(APIView):
         self._validate_get_request(request)
 
         spotify = Spotify(request.data['token'])
-        result = spotify.search(request.data['query'])
-        return Response(self._parse_results(result), status=status.HTTP_200_OK)
+
+        new_token = None
+
+        try: 
+            spotify_results = spotify.search(request.data['query'])
+        except SpotifyException as request_exception:
+            if not self._is_expired_token_exception(request_exception):
+                raise SpotifyException(request_exception.msg)
+            if not request.data.get('refresh_token'):
+                return Response({'error': 'Cannot search. Your token has expired, and you did not provide a refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                new_token = spotify_oauth.refresh_access_token(request.data['refresh_token'])['access_token']
+                stored_token = Token.objects.get(key=request.data['token'])
+                user = stored_token.user
+                stored_token.delete()
+                stored_token = Token.objects.create(key=new_token, user=user)
+                stored_token.created = datetime.utcnow()
+                stored_token.save()
+                spotify_results = Spotify(new_token).search(request.data['query'])
+
+        results = self._parse_results(spotify_results)
+        if new_token is not None:
+            results['token'] = new_token
+        return Response(results, status=status.HTTP_200_OK)
+
+    def _is_expired_token_exception(self, request_exception):
+        return request_exception.msg.find('The access token expired') != -1
 
     def _parse_results(self, spotipy_results):
         songs = spotipy_results['tracks']['items']
@@ -100,8 +126,6 @@ class MusicService(APIView):
             parsed_result.append(song_result)
 
         return {'songs': parsed_result}
-
-
 
     def _validate_get_request(self, request):
         if not request.data:
@@ -195,7 +219,8 @@ class MusicServiceFactory(APIView):
                 'user': UserSerializer(user, context={
                     'request': request
                 }).data,
-                'token': access_token
+                'token': access_token,
+                'refresh_token': token_info['refresh_token']
             },
             status=status.HTTP_200_OK)
 

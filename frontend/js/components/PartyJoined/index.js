@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { Button } from 'reactstrap';
-import { Navbar, Nav, Form, FormControl } from 'react-bootstrap'  
+import { Form, FormControl } from 'react-bootstrap'  
 import SpotifyWebPlayer, { STATUS } from 'react-spotify-web-playback';
+
+import SearchModal from '../SearchModal';
 
 import '../css/SpotifyPlayer.css';
 
@@ -10,6 +12,7 @@ class PartyJoined extends Component {
 		super(props);
 		this.state = {
 			error: null,
+			showModal: false,
 		}
 	}
 
@@ -30,21 +33,30 @@ class PartyJoined extends Component {
 		}
 	}
 
+	handleModal() {
+		this.setState({showModal: !this.state.showModal});
+	}
+
 	render() {
   	return (
 			<div className="PartyJoined">
 				<div className="title">
 					<h1>{`${this.props.partyName} [Code: ${this.props.partyCode}]`}</h1>
 				</div>
-				<div className="searchDiv">
-						<Form className="searchBar" >
-							<FormControl
-								type="text"
-								placeholder="Search"
-								className="mr-sm-2"
-							/>
-						</Form>          
-				</div>
+
+				<Button 
+					variant="primary" 
+					onClick={this.handleModal.bind(this)} 
+					color="success"
+					disabled={this.state.showModal}
+				>
+					Add Song
+				</Button>
+
+				<SearchModal 
+					show={this.state.showModal}
+					handleClose={this.handleModal.bind(this)}
+				/>
 
 				<div className="title">
 					<h1>Song Queue </h1>

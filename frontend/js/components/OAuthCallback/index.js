@@ -28,6 +28,7 @@ class OAuthCallback extends Component {
       loginToDirector({'code': foundCode})
         .then(json => { 
           localStorage.setItem('token', json.token);
+          localStorage.setItem('refresh_token', json.refresh_token);
           this.setState({loading: false, user: json['user']});
         })
         .catch(error => {

@@ -158,7 +158,7 @@ class Party(models.Model):
         :raises: if user with user_id not in guest list.
         """
         user = User.objects.get(id=user_id)
-        if user == host:
+        if user == self.host:
             # TODO: what to do if a host tries to leave?
             pass
         guest = self.guests.get(id=user_id)

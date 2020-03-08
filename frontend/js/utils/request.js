@@ -4,6 +4,9 @@ const checkFetchResponse = (response) => {
   }
   return response.json().then(data => {
     const error = new Error(data);
+    if (data.hasOwnProperty('error')) {
+      error.message = data.error;
+    }
     throw error;
   });
 };

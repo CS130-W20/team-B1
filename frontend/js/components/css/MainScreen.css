@@ -168,7 +168,11 @@ body {
 .SkipButton{
 	font-size: 20px;
 	text-align: center;
+}
 
+.AddButton {
+	font-size: 20px;
+	text-align: center;
 }
 
 .albumArtwork {

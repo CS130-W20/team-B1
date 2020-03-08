@@ -1,0 +1,54 @@
+.modal-dialog .modal-content {
+    max-height: 92vh;
+}
+
+.modal-content .modal-body {
+    overflow: hidden;
+}
+
+.fade.modal.show {
+    overflow: hidden;
+}
+
+.modal-dialog {
+    overflow: hidden;
+}
+
+.searchResults {
+    border-radius: 10px;
+    border: 1px solid lightgray;
+}
+
+.searchResults .list-group {
+    margin-top: 5px;
+    padding-bottom: 50px;
+}
+
+.searchResult {
+	padding: 20px 5px;
+    border-color: lightslategray;
+    background-color: whitesmoke!important;
+	border-radius: 10px;
+	background-color: #EBF0F7;
+	margin-bottom: 15px;
+    overflow: break-word;
+    width: 95%;
+    margin-left: 2.5%
+}
+
+.searchResult:hover {
+    background-color: lightgray!important;
+}
+
+.btn.btn-secondary.center {
+    text-align: center;
+}
+
+.songTitle {
+    color: black;
+}
+
+.songArtist {
+    color: rgb(105, 105, 105);
+    font-size: small;
+}

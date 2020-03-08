@@ -31,7 +31,7 @@ class MusicServiceFactoryTest(APITestCase):
         self.spotify_url = reverse('spotify')
 
     def test(self):
-        response = self.client.get(self.spotify_url, format='json')
+        response = self.client.post(self.spotify_url, format='json')
         self.assertEqual(response.data['error'], 'request is empty')
         self.assertEqual(response.status_code, 400)
 
