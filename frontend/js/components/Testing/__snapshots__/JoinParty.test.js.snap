@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing JoinParty Page correctly renders 1`] = `
+<div
+  className="JoinPartyName"
+>
+  <div
+    className="title"
+  >
+    <h1>
+      Almost Party Time!
+    </h1>
+  </div>
+  <form
+    className=""
+    onSubmit={[Function]}
+  >
+    <div
+      className="enterName form-group"
+    >
+      <input
+        className="form-control"
+        id="username"
+        name="username"
+        onChange={[Function]}
+        onKeyPress={[Function]}
+        placeholder="username"
+      />
+    </div>
+    <div
+      className="enterCode form-group"
+    >
+      <input
+        className="form-control"
+        id="partyCode"
+        name="partyCode"
+        onChange={[Function]}
+        onKeyPress={[Function]}
+        placeholder="Party Code"
+      />
+    </div>
+  </form>
+  <div
+    className="buttons"
+  >
+    <button
+      aria-label={null}
+      className="button btn btn-success"
+      disabled={false}
+      onClick={[Function]}
+      type="button"
+    >
+      Join party
+      <small>
+        Let's get rockin'
+      </small>
+    </button>
+  </div>
+</div>
+`;

@@ -1,0 +1,40 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Testing ErrorMessage Page correctly renders 1`] = `
+<div
+  className="container"
+>
+  <div
+    className="justify-content-md-center row"
+  >
+    <div
+      className="col-lg-2 col"
+    />
+    <div
+      className="col-md-auto"
+    >
+      <h1
+        style={
+          Object {
+            "fontSize": "15em",
+          }
+        }
+      >
+        :(
+      </h1>
+      <p
+        style={
+          Object {
+            "fontSize": "2.5em",
+          }
+        }
+      >
+        Something went wrong! Are you sure you're in the right place?
+      </p>
+    </div>
+    <div
+      className="col-lg-2 col"
+    />
+  </div>
+</div>
+`;
