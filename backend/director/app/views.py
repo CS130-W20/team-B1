@@ -3,6 +3,9 @@
 import os
 import requests
 import json
+from datetime import datetime
+
+from django.conf import settings as django_settings
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -14,25 +17,20 @@ from rest_framework import permissions, viewsets
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-import spotipy
-import spotipy.util
-from spotipy import oauth2
+from spotipy import Spotify
+from spotipy.client import SpotifyException
+from spotipy.oauth2 import SpotifyClientCredentials
+from ..SpotipyRest.oauth2 import SpotifyOAuthRest
 
-from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer
-from .models import Song, SongRequest, User, Party
+from .serializers import UserSerializer, SongSerializer, SongRequestSerializer, PartySerializer, PartyQueueSerializer
+from ..models import Song, SongRequest, User, Party, Token, PartyQueue
 
-SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
-SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
-SPOTIPY_REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI')
-SCOPE = 'user-read-private playlist-modify-public streaming'
-SPOTIFY_SEARCH_URL = 'https://api.spotify.com/v1/search'
-
-# spotipy requiries a username or a cache for some bizarre reason, but you can feed it a bs name
-spotify_oauth = oauth2.SpotifyOAuth(SPOTIPY_CLIENT_ID,
-                                    SPOTIPY_CLIENT_SECRET,
-                                    SPOTIPY_REDIRECT_URI,
-                                    scope=SCOPE,
-                                    username='__')
+spotify_oauth = SpotifyOAuthRest(
+    django_settings.SPOTIPY_CLIENT_ID, 
+    django_settings.SPOTIPY_CLIENT_SECRET, 
+    django_settings.SPOTIPY_REDIRECT_URI, 
+    scope=django_settings.SPOTIPY_SCOPE
+)
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -64,13 +62,21 @@ class PartyViewSet(viewsets.ModelViewSet):
     queryset = Party.objects.all()
     serializer_class = PartySerializer
 
+class PartyQueueViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows party queues to be viewed or edited.
+    """
+    queryset = PartyQueue.objects.all()
+    serializer_class = PartyQueueSerializer
+
 class MusicService(APIView):
     """
     Interacts with the spotify API, based on the passed token, and returns the results.
     """
-    def get(self, request, format='json'):
+    def post(self, request, format='json'):
         """
         :method: GET
+        :param str token: a valid Spotify API token.
         :param str query: a valid search query constructed via URL notation to apply to Spotify's backend.
         :rtype: json
         :return:
@@ -78,14 +84,52 @@ class MusicService(APIView):
             value: a list of all tracks matching the query, with their associated info
         """
         self._validate_get_request(request)
-        search_url = '{}?q={}&type=track'.format(SPOTIFY_SEARCH_URL,
-                                                 request.data['query'])
-        resp = requests.get(search_url,
-                            headers={
-                                'Authorization':
-                                'Bearer {}'.format(request.data['token'])
-                            })
-        return Response(json.loads(resp.text), status=resp.status_code)
+
+        if request.data.get('token'):
+            spotify = Spotify(request.data['token'])
+        else:
+            spotify = Spotify(client_credentials_manager=SpotifyClientCredentials())
+
+        new_token = None
+
+        try: 
+            spotify_results = spotify.search(request.data['query'])
+        except SpotifyException as request_exception:
+            if not self._is_expired_token_exception(request_exception):
+                raise SpotifyException(request_exception.msg)
+            if not request.data.get('refresh_token'):
+                return Response({'error': 'Cannot search. Your token has expired, and you did not provide a refresh token.'}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                new_token = spotify_oauth.refresh_access_token(request.data['refresh_token'])['access_token']
+                stored_token = Token.objects.get(key=request.data['token'])
+                user = stored_token.user
+                stored_token.delete()
+                stored_token = Token.objects.create(key=new_token, user=user)
+                stored_token.created = datetime.utcnow()
+                stored_token.save()
+                spotify_results = Spotify(new_token).search(request.data['query'])
+
+        results = self._parse_results(spotify_results)
+        if new_token is not None:
+            results['token'] = new_token
+        return Response(results, status=status.HTTP_200_OK)
+
+    def _is_expired_token_exception(self, request_exception):
+        return request_exception.msg.find('The access token expired') != -1
+
+    def _parse_results(self, spotipy_results):
+        songs = spotipy_results['tracks']['items']
+        parsed_result = []
+        for song in songs:
+            song_result = {}
+            song_result['artist_name'] = song['artists'][0]['name']
+            song_result['album_art'] = song['album']['images'][1]['url']
+            song_result['song_name'] = song['name']
+            song_result['uri'] = song['uri']
+            song_result['url'] = song['external_urls']['spotify']
+            parsed_result.append(song_result)
+
+        return {'songs': parsed_result}
 
     def _validate_get_request(self, request):
         if not request.data:
@@ -95,14 +139,6 @@ class MusicService(APIView):
         if not request.data.get('query'):
             raise ValidationError(
                 {'error': 'Search request must specify query string.'},
-                code='invalid')
-
-        if not request.data.get('token'):
-            raise ValidationError(
-                {
-                    'error':
-                    'Search request must specify valid Spotify API token.'
-                },
                 code='invalid')
 
 
@@ -133,7 +169,7 @@ class MusicServiceFactory(APIView):
             return Response({'error': 'Must specify spotify code.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        try:
+        try: 
             token_info = spotify_oauth.get_access_token(code)
         except:
             return Response(
@@ -146,26 +182,41 @@ class MusicServiceFactory(APIView):
             return Response({'error': 'Spotify OAuth call failed.'},
                             status=status.HTTP_401_UNAUTHORIZED)
 
-        spotify = spotipy.Spotify(access_token)
+        spotify = Spotify(access_token)
         spotify_data = spotify.current_user()
 
         if spotify_data.get('product') != 'premium':
             return Response(
                 {
-                    'error':
-                    'The user account provided is not a Spotify Premium account!'
-                },
-                status=status.HTTP_403_FORBIDDEN)
+                    'error': 'The user account provided is not a Spotify Premium account!'
+                }, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        try:
+            user = User.objects.get(spotify_id=spotify_data.get('id'))
+        except:
+            user = User(name=spotify_data.get('display_name'), spotify_id=spotify_data.get('id'))
+            user.save()
 
-        user = User(name=spotify_data.get('display_name'))
-        user.save()
+        try:
+            # since the user got a new token from Spotify, we gotta rid our tracking of the old one
+            stored_token = Token.objects.get(user=user)
+            stored_token.delete()
+        except:
+            pass
+
+        stored_token = Token.objects.create(key=access_token, user=user)
+        stored_token.created = datetime.utcnow()
+        stored_token.save()
 
         return Response(
             {
                 'user': UserSerializer(user, context={
                     'request': request
                 }).data,
-                'token': access_token
+                'token': access_token,
+                'refresh_token': token_info['refresh_token']
             },
             status=status.HTTP_200_OK)
 

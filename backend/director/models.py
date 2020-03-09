@@ -1,21 +1,71 @@
+from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 from django.utils.crypto import get_random_string
+from django.utils.translation import gettext_lazy as _
+from django.conf import settings
+
+
+class Token(models.Model):
+    """
+    The default authorization token model.
+    Disgusting duplicate of DRF's token because we can't override model fields in Django >:(
+    Only changes the key field to be big enough to store Spotify tokens
+    """
+    key = models.TextField(_("Key"), primary_key=True)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, related_name='spotify_token',
+        on_delete=models.CASCADE, verbose_name=_("User")
+    )
+    created = models.DateTimeField(_("Created"), auto_now_add=True)
+
+    class Meta:
+        # Work around for a bug in Django:
+        # https://code.djangoproject.com/ticket/19422
+        #
+        # Also see corresponding ticket:
+        # https://github.com/encode/django-rest-framework/issues/705
+        abstract = 'rest_framework.authtoken' not in settings.INSTALLED_APPS
+        verbose_name = _("Token")
+        verbose_name_plural = _("Tokens")
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        return super().save(*args, **kwargs)
+
+    def generate_key(self):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return self.key
+
 
 class Song(models.Model):
     # the custom song_id will be that coming from the music provider
-    song_id = models.CharField(max_length=25, primary_key=True)
-    name = models.CharField(max_length=50)
-    artist = models.CharField(max_length=50)
-    album = models.CharField(max_length=50)
+    uri = models.TextField(primary_key=True)
+    name = models.TextField()
+    artist = models.TextField()
     album_art = models.URLField(blank=True)
 
     def __str__(self):
-        return f"{self.name} by {self.artist} (id: {self.song_id})"
+        return f"{self.name} by {self.artist} (id: {self.uri})"
 
-class User(models.Model):
+class User(AbstractBaseUser):
     # django assigns a primary key id by default
-    name = models.CharField(max_length=50)
+    name = models.TextField(unique=True)
     join_time = models.DateTimeField(auto_now_add=True)
+    spotify_id = models.TextField(unique=True, null=True)
+
+    # get rid of unnecessary fields inherited
+    password = None
+    is_active = None
+    last_login = None
+
+    # Since this will act as the AUTH_MODEL, need to define required fields
+    REQUIRED_FIELDS = ()
+    # Must also set USERNAME field
+    USERNAME_FIELD = 'name'
+    
     def get_song_requests(self):
         return self.songs_requested.all()
     def get_song_skip_requests(self):
@@ -41,12 +91,16 @@ class PartyQueue(models.Model):
     queue = models.ManyToManyField(SongRequest, related_name='queue')
     history = models.ManyToManyField(SongRequest, related_name='history')
     skipped = models.ManyToManyField(SongRequest, related_name='skipped')
+    offset = models.PositiveIntegerField(default=0)
 
     def addSong(self, user, song):
         req = SongRequest.objects.create(song=song, requester_id=user)
         if req:
             self.queue.add(req)
-        return req
+            print('addSong t')
+            return True
+        print('addSong f')
+        return False
     
     def removeSong(self, song_request):
         self.queue.remove(song_request)
@@ -98,21 +152,59 @@ class Party(models.Model):
         return self.guests.all()
     
     def join(self, name):
-        user = User.objects.create(name=name)
+        try:
+            user = User.objects.get(name=name)
+            uniquifier = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+            while User.objects.filter(name='{}{}'.format(name, uniquifier)):
+                uniquifier = get_random_string(length=4, allowed_chars='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789')
+            user = User.objects.create(name='{}{}'.format(name, uniquifier))
+        except:
+            user = User.objects.create(name=name)
+
         self.guests.add(user)
         return user
 
+    def leave(self, user_id):
+        """
+        :raises: if user with user_id not in guest list.
+        """
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return
+        if user == self.host:
+            # TODO: export history to playlist
+            self.delete()
+        else:
+            guest = self.guests.get(id=user_id)
+            guest.delete()
+
+    def delete(self, using=None):
+        for guest in self.guests.all():
+            guest.delete()
+        if self.queue:
+            self.queue.delete()
+        if self.host:
+            self.host.delete()
+        super(Party, self).delete(using)
+        
     def searchForSong(self, query):
         # TODO
         pass
     
     def requestSong(self, user, song):
+        if user not in self.guests.all() and user != self.host:
+            return False
         ret = self.queue.addSong(user, song)
         return ret
     
     def requestSkip(self, user, song_request):
+        if user not in self.guests:
+            return False
         ret = song_request.skip_requests.add(user)
-        # TODO: check if skip threshold is met
+        skipPercentage = len(song_request.skip_requests) / len(guests)
+        if skipPercentage >= skipPercentageThreshold:
+            self.queue.removeSong(song_request)
         return ret
     
     def vetoSong(self, host, song_request):

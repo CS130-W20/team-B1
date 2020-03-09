@@ -1,48 +1,145 @@
-import React from 'react';
-// import 'bootstrap/dist/css/bootstrap.css';
-// import '../css/MainScreen.css';
+import React, { Component } from 'react';
 import { Button } from 'reactstrap';
-import { Navbar, Nav, Form, FormControl } from 'react-bootstrap'  
+import SpotifyWebPlayer, { STATUS } from 'react-spotify-web-playback';
 
+import SearchModal from '../SearchModal';
+import Chat from '../Chat';
 
+import '../css/SpotifyPlayer.css';
 
-const PartyJoined = () => {
-  return (
-  	<div className="PartyJoined">
-		<div class="searchDiv">
-	        <Form class="searchBar" >
-	            <FormControl
-	                type="text"
-	                placeholder="Search"
-	                className="mr-sm-2"/>
-	        </Form>          
-		</div>
+class PartyJoined extends Component {
+	constructor(props) {
+		super(props);
+		this.state = {
+			error: null,
+			showModal: false,
+			position: 0,
+			autoPlay: true,
+		}
+	}
 
-		<div class="title">
-			<h1>Song Queue </h1>
-		</div>
+	handleCallback({ status, errorType, position, previousTracks }) {
+		if (status === STATUS.ERROR && errorType === 'authentication_error') {
+			localStorage.removeItem('token');
+			// TODO: update token
+			setToken('');
+		}
+		if (this.state.position < position && position >= 0) {
+			this.setState({position: position});
+		}
+		
+		let latestPreviousTrack = null;
+		if (previousTracks.length > 0) { // previousTracks max length is capped at 2
+			latestPreviousTrack = previousTracks.length == 2 ? previousTracks[1] : previousTracks[0];
+		}
+		const uri_to_match = latestPreviousTrack ? (latestPreviousTrack.linked_from_uri ? latestPreviousTrack.linked_from_uri : latestPreviousTrack.uri) : null;
+		const newTrackLength = latestPreviousTrack != null ? this.props.songList.findIndex(ele => ele == uri_to_match) + 1 : 0;
 
+		console.log(`~~~~~~~~~`)
+		console.log(`latesTPreviousTrack: ${latestPreviousTrack}`);
+		console.log(previousTracks)
+		console.log(`newTrackLength: ${newTrackLength}`)
+		console.log(`latestPreviousTrack.uri: ${uri_to_match}`)
+		console.log(`this.props.songOffset: ${this.props.songOffset}`);
+		console.log(`position: ${position}`);
+		console.log(`this.state.position: ${this.state.position}`);
+		console.log(this.props.songList)
+		console.log(`~~~~~~~~~`)
+		if (newTrackLength > this.props.songOffset) { // we disallow backtracking in the queue now || (newTrackLength == this.props.songOffset - 2)) {
+			this.props.advanceQueue(newTrackLength);
+		}
+	}
 
+	handleModal() {
+		this.setState({showModal: !this.state.showModal});
+	}
 
+	handleSongAdd(data) {
+		this.setState({showModal: false, autoPlay: false}); 
+		this.props.handleSongAdd(data);
+	}
+	
+	render() {
+		console.log(`songList: ${this.props.songList}`)
+  	return (
+			<div className="PartyJoined">
+				<div className="title">
+					<h1>{`${this.props.partyName} [Code: ${this.props.partyCode}]`}</h1>
+				</div>
 
-	    <div className="listViewSongQueue">
-			<div class="list-group">
-				<a href="#" class="list-group-item list-group-item-action listQueue">
-					<div class="column left">
-						<img class="albumArtwork" src="https://www.w3schools.com/images/w3schools_green.jpg" alt="W3Schools.com" />
+				<Button 
+					variant="primary" 
+					onClick={this.handleModal.bind(this)} 
+					color="success"
+					disabled={this.state.showModal}
+				>
+					Add Song
+				</Button>
+
+				<SearchModal 
+					show={this.state.showModal}
+					handleClose={this.handleModal.bind(this)}
+					handleSongAdd={this.handleSongAdd.bind(this)}
+				/>
+
+				<div className="title">
+					<h1>Song Queue </h1>
+				</div>
+
+				{this.props.error ? <small className="error">{this.props.error}</small> : null}
+
+				<div className="queueResults">
+					<div className="list-group">
+						{this.props.queue.map((result, index) => (
+							<div key={index} className="list-group-item list-group-item-action queueResult">
+								<a href={result.url} target="_blank">
+									<div className="column left">
+										<img className="albumArtwork" src={result.album_art} alt={`${result.song_name} Album Art`} />
+									</div>
+									<div className="column middle songTitle">{result.song_name}</div>
+									<div className="column middle songArtist">{result.artist_name}</div>
+								</a>
+								{index == 0 ?
+								<div className="column right buttonCard">
+									<Button className="AddButton" color="danger" onClick={() => this.props.handleSongSkip(result)}>{this.props.hosting ? 'Skip' : 'Vote to Skip'}</Button>
+								</div>
+								:
+								null
+								}
+							</div>
+						))}
 					</div>
+				</div>
 
-					<div class="column middle">Name of Song</div>
+				<Chat 
+					socket={this.props.socket}
+					user={this.props.user}
+				/>
 
-					<div class="column right buttonCard">
-						<Button className="SkipButton" color="danger">Skip</Button>
-					</div>
-				</a>
+				{
+					this.props.hosting ?
+					<SpotifyWebPlayer
+						autoPlay={this.state.autoPlay}
+						callback={this.handleCallback.bind(this)}
+						persistDeviceSelection
+						play={false}
+						magnifySliderOnHover
+						showSaveIcon
+						token={localStorage.getItem('token')}
+						styles={{
+							sliderColor: '#1cb954',
+						}}
+						name={'Director Web Player'}
+						offset={this.props.songOffset}
+						uris={this.props.songList}
+						position={this.state.position}
+					/>
+					:
+					null
+				}
 			</div>
-	  	</div>
-  	</div>
-
-  );
+		);
+	}
 }
 
 export default PartyJoined;

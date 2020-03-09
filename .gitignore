@@ -4,6 +4,13 @@
 # macOS-specific
 .DS_Store
 
+# Spotify
+spotify.env
+
+# Testing Stuff
+output.json
+test.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

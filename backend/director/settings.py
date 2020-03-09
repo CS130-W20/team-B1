@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'drf_yasg',
 ]
 
@@ -116,6 +117,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'director.User'
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -137,9 +140,24 @@ STATIC_URL = '/static/'
 # Channels configuration
 ASGI_APPLICATION = 'director.routing.application'
 
+# Channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(os.environ.get("REDIS_URL"), 6379)],
+        },
+    },
+}
+
 # we whitelist localhost:3000 because that's where frontend will be served
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
     'http://localhost:8000',
     'http://localhost:8080',
 )
+
+SPOTIPY_CLIENT_ID = os.environ.get('SPOTIPY_CLIENT_ID')
+SPOTIPY_CLIENT_SECRET = os.environ.get('SPOTIPY_CLIENT_SECRET')
+SPOTIPY_REDIRECT_URI = os.environ.get('SPOTIPY_REDIRECT_URI')
+SPOTIPY_SCOPE = 'user-read-private user-read-email playlist-modify-public user-library-read user-library-modify user-read-playback-state user-modify-playback-state streaming'
