@@ -97,9 +97,7 @@ class PartyQueue(models.Model):
         req = SongRequest.objects.create(song=song, requester_id=user)
         if req:
             self.queue.add(req)
-            print('addSong t')
             return True
-        print('addSong f')
         return False
     
     def removeSong(self, song_request):
@@ -199,11 +197,11 @@ class Party(models.Model):
         return ret
     
     def requestSkip(self, user, song_request):
-        if user not in self.guests:
+        if user not in self.guests.all():
             return False
         ret = song_request.skip_requests.add(user)
-        skipPercentage = len(song_request.skip_requests) / len(guests)
-        if skipPercentage >= skipPercentageThreshold:
+        skipPercentage = len(song_request.skip_requests.all()) / len(self.guests.all())
+        if skipPercentage >= self.skipPercentageThreshold:
             self.queue.removeSong(song_request)
         return ret
     
